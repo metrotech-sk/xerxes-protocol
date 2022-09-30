@@ -11,12 +11,22 @@ class TestDevid:
     def test_type_2(self):
         with pytest.raises(TypeError):
             id = ids.DevId(3.5)
-            
-            
+    
+    
     def test_type_3(self):
+        id = ids.DevId(b"\xFF")
+        assert bytes(id) == b"\xFF"
+            
+            
+    def test_large(self):
         with pytest.raises(AssertionError):
             id = ids.DevId(256)
+    
+    
+    def test_negative(self):
+        with pytest.raises(AssertionError):
             id = ids.DevId(-1)
+    
             
 class TestMsgid:
     def test_type_1(self):

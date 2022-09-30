@@ -22,13 +22,9 @@ class Id:
 
     def __bytes__(self) -> bytes:
         id: int = self._id
-        byte_length = math.ceil(id.bit_length/8)
+        byte_length = math.ceil(id.bit_length()/8)
         
         return id.to_bytes(byte_length, "little")
-    
-    
-    def to_bytes(self) -> bytes:
-        return bytes(self)
         
 
     def __repr__(self):
@@ -57,14 +53,10 @@ class MsgIdMixin(Id):
         else:
             raise TypeError(f"Unsupported argument, expected int|bytes, got {type(id)} instead")
         super().__init__(id)
-            
         
+    
     def __bytes__(self):
         return self._id.to_bytes(2, "little")
-    
-    
-    def to_bytes(self):
-        return bytes(self)
 
 
     def __len__(self):
@@ -80,14 +72,6 @@ class DevIdMixin(Id):
         else:
             raise TypeError(f"Unsupported argument, expected int|bytes, got {type(id)} instead")
         super().__init__(id)
-        
-            
-    def __bytes__(self):
-        return self._id.to_bytes(1, "little")
-
-    
-    def to_bytes(self):
-        return bytes(self)
     
 
     def __len__(self):
