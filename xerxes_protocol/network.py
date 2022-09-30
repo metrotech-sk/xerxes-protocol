@@ -2,14 +2,13 @@
 # -*- coding: utf-8 -*-
 
 
-from ast import Add
 from dataclasses import dataclass
 import struct
 import time
 from typing import Union
 import serial
 from xerxes_protocol.ids import DevId, MsgId
-from xerxes_protocol.defaults import *
+from xerxes_protocol.defaults import DEFAULT_BAUDRATE, DEFAULT_BROADCAST_ADDRESS, DEFAULT_TIMEOUT
 
 
 class ChecksumError(Exception): ...
@@ -37,22 +36,22 @@ class Addr(int):
         assert isinstance(addr, int), f"address must be of type bytes|int, got {type(addr)} instead."
         assert addr >= 0, "address must be positive"
         assert addr < 256, "address must be lower than 256"
-      
+
         return super().__new__(cls, addr)
 
 
     def to_bytes(self):
         return int(self).to_bytes(1, "little")
 
-    
+
     def __bytes__(self):
         return self.to_bytes()
 
-    
+
     def __repr__(self):
         return f"Addr(0x{self.to_bytes().hex()})"
 
-    
+
     def __eq__(self, __o: object) -> bool:
         return int(self) == int(__o)
 
@@ -92,7 +91,7 @@ class FutureXerxesNetwork:
     
     
     def __repr__(self):
-        return f"FutureXerxesNetwork()"
+        return "FutureXerxesNetwork()"
 
 
 class XerxesNetwork: ...
@@ -128,7 +127,7 @@ class XerxesNetwork:
 
 
     def __repr__(self) -> str:
-        return f"XerxesNetwork(port='{self._s.port}', baudrate={self._s.baudrate}, timeout={self._s.timeout}, my_addr={self._addr})"
+        return f"XerxesNetwork(port='{self._s.port}', baudrate={self._s.baudrate}, timeout={self._s.timeout})"
 
 
     def __del__(self):
@@ -145,24 +144,24 @@ class XerxesNetwork:
             if len(next_byte)==0:
                 raise TimeoutError("No message in queue")
 
-        checksum = 0x01
+        chs = 0x01
         # read message length
         msg_len = int(self._s.read(1).hex(), 16)
-        checksum += msg_len
+        chs += msg_len
 
         #read source and destination address
         src = self._s.read(1)
         dst = self._s.read(1)
 
         for i in [src, dst]:
-            checksum += int(i.hex(), 16) 
+            chs += int(i.hex(), 16) 
 
         # read message ID
         msg_id_raw = self._s.read(2)
         if(len(msg_id_raw)!=2):
             raise MessageIncomplete("Invalid message id received")
         for i in msg_id_raw:
-            checksum += i
+            chs += i
 
         msg_id = struct.unpack("H", msg_id_raw)[0]
 
@@ -173,15 +172,15 @@ class XerxesNetwork:
             if(len(next_byte)!=1):
                 raise MessageIncomplete("Received message incomplete")
             raw_msg += next_byte
-            checksum += int(next_byte.hex(), 16)
+            chs += int(next_byte.hex(), 16)
         
         #read checksum
         rcvd_chks = self._s.read(1)
-        if(len(rcvd_chks)!=1):
+        if len(rcvd_chks)!=1:
             raise MessageIncomplete("Received message incomplete")
-        checksum += int(rcvd_chks.hex(), 16)
-        checksum %= 0x100
-        if checksum:
+        chs += int(rcvd_chks.hex(), 16)
+        chs %= 0x100
+        if chs:
             raise ChecksumError("Invalid checksum received")
 
         return XerxesMessage(
@@ -194,7 +193,7 @@ class XerxesNetwork:
         )
 
 
-    def send_msg(self, destination: Addr, payload: bytes) -> None:    
+    def send_msg(self, source: Addr, destination: Addr, payload: bytes) -> None:    
         assert self._opened, "Serial port not opened yet. Call .init() first"
 
         if not isinstance(destination, Addr):
@@ -204,7 +203,7 @@ class XerxesNetwork:
 
         msg = SOH  # SOH
         msg += (len(payload) + 5).to_bytes(1, "little")  # LEN
-        msg += self._addr.bytes
+        msg += source.bytes # FROM
         msg += destination.bytes #  DST
         msg += payload
         msg += checksum(msg)
@@ -219,6 +218,8 @@ class XerxesRoot:
             self._addr = my_addr
         else:
             raise TypeError(f"my_addr type wrong, expected Union[Addr, int, bytes], got {type(my_addr)} instead")
+        assert isinstance(network, XerxesNetwork)
+        self.network = network
     
     
     @property
@@ -232,21 +233,21 @@ class XerxesRoot:
     
 
     def broadcast(self, payload: bytes) -> None:
-        self.send_msg(destination=BROADCAST_ADDR, payload=payload)
+        self.network.send_msg(destination=BROADCAST_ADDR, payload=payload)
         
 
     def sync(self) -> None:
-        self.broadcast(payload=MsgId.SYNC.to_bytes())
+        self.broadcast(payload=bytes(MsgId.SYNC))
         
         
     def ping(self, addr: Addr):
         start = time.monotonic()
 
-        self.send_msg(
+        self.network.send_msg(
             destination=addr,
-            payload=MsgId.PING.to_bytes()
+            payload=bytes(MsgId.PING)
         )
-        reply = self.read_msg()
+        reply = self.network.read_msg()
         if reply.message_id == MsgId.PING_REPLY:
             rpl = struct.unpack("BBB", reply.payload)
             return XerxesPingReply(
