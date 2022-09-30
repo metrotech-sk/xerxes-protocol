@@ -17,7 +17,7 @@ keywords = [
 ]
 
 [project.urls]
-homepage = "metrotech.sk"
+homepage = "http://metrotech.sk"
 repository = "https://github.com/metrotech-sk/xerxes-protocol"
 
 [build-system]
