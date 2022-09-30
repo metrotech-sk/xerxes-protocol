@@ -1,6 +1,25 @@
+
+[project]
+name = "xerxes-protocol"
+version = "0.0.2"
+description = "Python implementation for xerxes-protocol"
+readme = "README.md"
+requires_python = '>=3.8'
+license = {file = "LICENSE"}
+authors = [
+    {name = "Stanislav Rubint", email = "stanislav@rubint.sk"}
+]
+dependencies = [
+    "pyserial"
+]
+keywords = [
+    "xerxes"
+]
+
+[project.urls]
+homepage = "metrotech.sk"
+repository = "https://github.com/metrotech-sk/xerxes-protocol"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-
-[metadata]
-name = "xerxes-protocol"
