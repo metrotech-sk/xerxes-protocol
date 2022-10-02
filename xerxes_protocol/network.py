@@ -8,12 +8,14 @@ import time
 from typing import Union
 import serial
 from xerxes_protocol.ids import DevId, MsgId
-from xerxes_protocol.defaults import DEFAULT_BAUDRATE, DEFAULT_BROADCAST_ADDRESS, DEFAULT_TIMEOUT
+from xerxes_protocol.defaults import DEFAULT_BAUDRATE, DEFAULT_TIMEOUT
 
 
 class ChecksumError(Exception): ...
 
 class MessageIncomplete(Exception): ...
+
+class InvalidMessage(Exception): ...
 
 class LengthError(Exception): ...
 
@@ -60,9 +62,6 @@ class Addr(int):
         return int(self)
 
 
-BROADCAST_ADDR = Addr(DEFAULT_BROADCAST_ADDRESS)
-
-
 @dataclass
 class XerxesMessage:
     source: Addr
@@ -75,9 +74,9 @@ class XerxesMessage:
 
 @dataclass
 class XerxesPingReply:
-    devId: DevId
-    vMaj: int
-    vMin: int
+    dev_id: DevId
+    v_maj: int
+    v_min: int
     latency: float
 
 
@@ -165,7 +164,7 @@ class XerxesNetwork:
 
         msg_id = struct.unpack("H", msg_id_raw)[0]
 
-        # read and unpack all data into array, assuming it is uint32_t, big-endian
+        # read and unpack all data into array, assuming it is uint32_t, little-endian
         raw_msg = bytes(0)
         for i in range(int(msg_len -    7)):
             next_byte = self._s.read(1)
@@ -198,63 +197,16 @@ class XerxesNetwork:
 
         if not isinstance(destination, Addr):
             destination = Addr(destination)
+        if not isinstance(source, Addr):
+            source = Addr(source)
+        assert isinstance(payload, bytes)
             
         SOH = b"\x01"
 
         msg = SOH  # SOH
         msg += (len(payload) + 5).to_bytes(1, "little")  # LEN
-        msg += source.bytes # FROM
-        msg += destination.bytes #  DST
+        msg += bytes(source) # FROM
+        msg += bytes(destination) #  DST
         msg += payload
         msg += checksum(msg)
         self._s.write(msg)
-        
-        
-class XerxesRoot:
-    def __init__(self, network: XerxesNetwork, my_addr: Union[int, bytes]=0):        
-        if isinstance(my_addr, int) or isinstance(my_addr, bytes):
-            self._addr = Addr(my_addr)
-        elif isinstance(my_addr, Addr):
-            self._addr = my_addr
-        else:
-            raise TypeError(f"my_addr type wrong, expected Union[Addr, int, bytes], got {type(my_addr)} instead")
-        assert isinstance(network, XerxesNetwork)
-        self.network = network
-    
-    
-    @property
-    def addr(self):
-        return self._addr
-
-
-    @addr.setter
-    def addr(self, __v):
-        self._addr = Addr(__v)
-    
-
-    def broadcast(self, payload: bytes) -> None:
-        self.network.send_msg(destination=BROADCAST_ADDR, payload=payload)
-        
-
-    def sync(self) -> None:
-        self.broadcast(payload=bytes(MsgId.SYNC))
-        
-        
-    def ping(self, addr: Addr):
-        start = time.monotonic()
-
-        self.network.send_msg(
-            destination=addr,
-            payload=bytes(MsgId.PING)
-        )
-        reply = self.network.read_msg()
-        if reply.message_id == MsgId.PING_REPLY:
-            rpl = struct.unpack("BBB", reply.payload)
-            return XerxesPingReply(
-                devId=DevId(rpl[0]),
-                vMaj=int(rpl[1]),
-                vMin=int(rpl[2]),
-                latency=(time.monotonic() - start)
-            )
-        else:
-            NetworkError("Invalid reply received ({reply.message_id})")

@@ -91,6 +91,8 @@ class MsgId(MsgIdMixin):
     # Acknowledge NOK packet
     ACK_NOK                       = MsgIdMixin(0x0003)
     
+    RESET                         = MsgIdMixin(0x00FF)
+    
     # Request to send measurements
     FETCH_MEASUREMENT             = MsgIdMixin(0x0100)
     
@@ -99,31 +101,17 @@ class MsgId(MsgIdMixin):
     
     # Set register to a value 
     # The message prototype is <MSGID_SET> <REG_ID> <LEN> <BYTE_1> ... <BYTE_N>
-    SET                           = MsgIdMixin(0x0200)
+    WRITE                         = MsgIdMixin(0x0200)
     
     # Read  up to <LEN> bytes from device register, starting at <REG_ID>
     # The request prototype is <MSGID_READ> <REG_ID> <LEN>           
     READ_REQ                      = MsgIdMixin(0x0201)
-    READ_VALUE                    = MsgIdMixin(0x0202)
+    READ_REPLY                    = MsgIdMixin(0x0202)
     
-    # Pressure value + 2 temperatures
-    PRESSURE_mPa_111TEMP          = MsgIdMixin(0x0403)    
-    # Pressure value + second temperature only
-    PRESSURE_mPa_110TEMP          = MsgIdMixin(0x0402)        
-    # Pressure value + first temperature only
-    PRESSURE_mPa_101TEMP          = MsgIdMixin(0x0401)
     # Pressure value w/o temperature*/ 
-    PRESSURE_mPa_100TEMP          = MsgIdMixin(0x0400)
+    PRESSURE_Pa                   = MsgIdMixin(0x0400)
     
-    
-    # Strain value + 2 temperatures
-    STRAIN_24BIT_11TEMP           = MsgIdMixin(0x1103)    
-    # Strain value + second temperature only
-    STRAIN_24BIT_10TEMP           = MsgIdMixin(0x1102)        
-    # Strain value + first temperature only
-    STRAIN_24BIT_01TEMP           = MsgIdMixin(0x1101)
-    # Strain value w/o temperature
-    STRAIN_24BIT_00TEMP           = MsgIdMixin(0x1100)
+    STRAIN_24BIT                  = MsgIdMixin(0x1100)
 
     # Cutter 1000P/R, 63mm wheel */
     PULSES                        = MsgIdMixin(0x2A01)
@@ -135,7 +123,7 @@ class MsgId(MsgIdMixin):
     DISTANCE_225MM                = MsgIdMixin(0x4100)
     
 
-    # 2 angle values, X, Y (-90°, 90°
+    # 2 angle values, X, Y (-90°, 90°)
     ANGLE_DEG_XY                  = MsgIdMixin(0x3000)
 
 
