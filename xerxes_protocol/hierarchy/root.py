@@ -41,7 +41,7 @@ class XerxesRoot:
     
 
     def broadcast(self, payload: bytes) -> None:
-        self.network.send_msg(destination=BROADCAST_ADDR, payload=payload)
+        self.network.send_msg(source=self.address, destination=BROADCAST_ADDR, payload=payload)
         
 
     def sync(self) -> None:
