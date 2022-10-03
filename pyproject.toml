@@ -11,7 +11,8 @@ authors = [
 ]
 dependencies = [
     "pyserial",
-    "pytest"
+    "pytest",
+    "rich"
 ]
 keywords = [
     "xerxes"
