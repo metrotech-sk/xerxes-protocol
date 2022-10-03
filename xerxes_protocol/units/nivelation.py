@@ -13,8 +13,7 @@ class Nivelation(Pressure):
         converted = self._conversion(self.value)
         return converted
 
-    @property
-    def preffered(self):
+    def preferred(self):
         return self.mm
 
     def __repr__(self) -> str:

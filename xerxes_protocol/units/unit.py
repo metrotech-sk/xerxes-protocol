@@ -7,8 +7,7 @@ class Unit:
     def __init__(self, value=0):
         self._value = value
 
-    @property 
-    def preffered(self):
+    def preferred(self):
         return self._value
     
     @property

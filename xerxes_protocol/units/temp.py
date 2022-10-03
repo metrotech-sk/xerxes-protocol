@@ -31,7 +31,7 @@ class Temperature(Unit):
         return f"Temperature({self._value})"
     
     
-    def preffered(self):
+    def preferred(self):
         return self.celsius
 
 

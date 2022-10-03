@@ -10,11 +10,27 @@ import time
 from xerxes_protocol.ids import DevId, MsgId
 from xerxes_protocol.network import Addr, InvalidMessage, XerxesMessage, XerxesPingReply
 from xerxes_protocol.hierarchy.root import XerxesRoot
+from xerxes_protocol.units.unit import Unit
 
 
 @dataclass
-class LeafData(object): ...
+class LeafData(object):
     # addr: int
+    def _as_dict(self):
+        d = {}
+        for attribute in self.__dir__():
+            if not attribute.startswith("__"):
+                attr_val = self.__getattribute__(attribute)
+                if isinstance(attr_val, (int, float, str, dict, list)):
+                    d.update({
+                        attribute: attr_val
+                    })
+                elif isinstance(attr_val, Unit):
+                    d.update({
+                        attribute: attr_val.preferred()
+                    })
+                    
+        return d
 
 
 class Leaf:
@@ -63,7 +79,7 @@ class Leaf:
         if reply.message_id == MsgId.ACK_OK:
             return reply
         else:
-            raise RuntimeError("Register write unsuccesfull.")
+            raise RuntimeError("Register write unsuccessful.")
     
 
     def read_param(self, key: str) -> Union[int, float]:
@@ -106,3 +122,29 @@ class Leaf:
     def __str__(self) -> str:
         return self.__repr__()
 
+
+    @staticmethod
+    def average(array: List[LeafData]) -> LeafData:
+        assert isinstance(array[0], LeafData)
+        assert isinstance(array, list)
+        
+        average = {}
+        for data in array:
+            for attribute in data.__dir__():
+                if not attribute.startswith("_"):
+                    # if entry is not in the dict, create empty list
+                    if not average.get(attribute):
+                        average[attribute] = []
+                        
+                    # convert attribute val to reasonable number if necessary
+                    attr_val = data.__getattribute__(attribute)
+                    if isinstance(attr_val, Unit):
+                        attr_val = attr_val.preferred()
+                    average[attribute].append(attr_val)
+                    
+        average_class = LeafData()
+        for key in average:
+            averages = average[key]
+            if len(averages) > 0:
+                average_class.__setattr__(key, sum(averages)/len(averages))
+        return average_class

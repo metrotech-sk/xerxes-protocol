@@ -23,6 +23,5 @@ class Pressure(Unit):
     def __repr__(self):
         return f"Pressure({self.value})"
 
-    @property
     def preferred(self):
         return self.Pascal

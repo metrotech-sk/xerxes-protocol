@@ -15,6 +15,5 @@ class Length(Unit):
     def __repr__(self):
         return f"Length({self.value})"
 
-    @property
     def preferred(self):
         return self.m
