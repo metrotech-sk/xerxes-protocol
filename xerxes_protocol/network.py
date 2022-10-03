@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 import struct
 import time
 from typing import Union
@@ -79,6 +79,13 @@ class XerxesPingReply:
     v_min: int
     latency: float
 
+    def as_dict(self):
+        return {
+            "dev_id": str(self.dev_id),
+            "version": f"{self.v_maj}.{self.v_min}",
+            "latency": self.latency
+        }
+
 
 class FutureXerxesNetwork:
     def send_msg(self, __dst, __pld) -> None:
@@ -132,7 +139,7 @@ class XerxesNetwork:
 
 
     def __repr__(self) -> str:
-        return f"XerxesNetwork(port='{self._s.port}', baudrate={self._s.baudrate}, timeout={self._s.timeout})"
+        return f"XerxesNetwork(port={self._s})"
 
 
     def __del__(self):

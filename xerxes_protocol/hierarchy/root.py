@@ -25,8 +25,8 @@ class XerxesRoot:
 
     def __repr__(self) -> str:
         return f"XerxesRoot(my_addr={self._addr}, network={self.network})"
-    
-    
+
+
     def send_msg(self, destination: Addr, payload: bytes) -> None:
         if not isinstance(destination, Addr):
             destination = Addr(destination)

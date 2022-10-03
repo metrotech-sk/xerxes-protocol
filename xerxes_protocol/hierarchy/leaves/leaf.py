@@ -19,7 +19,7 @@ class LeafData(object):
     def _as_dict(self):
         d = {}
         for attribute in self.__dir__():
-            if not attribute.startswith("__"):
+            if not attribute.startswith("_"):
                 attr_val = self.__getattribute__(attribute)
                 if isinstance(attr_val, (int, float, str, dict, list)):
                     d.update({
@@ -42,6 +42,7 @@ class Leaf:
     
     def __init__(self, addr: Addr, root: XerxesRoot):
         assert(isinstance(addr, Addr))
+        assert isinstance(root, XerxesRoot)
         self._address = addr
 
         self.root: XerxesRoot
@@ -116,7 +117,7 @@ class Leaf:
 
 
     def __repr__(self) -> str:
-        return f"Leaf(address={self.address}, root={self.root})"
+        return f"Leaf(addr={self.address}, root={self.root})"
 
 
     def __str__(self) -> str:

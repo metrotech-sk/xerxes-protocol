@@ -3,6 +3,7 @@
 
 from xerxes_protocol.units.unit import Unit
 
+
 class Pressure(Unit):
     @property
     def mmH2O(self):
@@ -25,3 +26,27 @@ class Pressure(Unit):
 
     def preferred(self):
         return self.Pascal
+
+
+def Pascal(Pa) -> Pressure:
+    return Pressure(Pa)
+
+
+_g = 9.80665
+
+
+class Nivelation(Pressure):
+    def mm_ethyleneglycol(self):
+        return self.value/(_g*1.1132)
+
+    def mm_water(self):
+        return self.value/(_g*1)
+
+    def mm_siloxane(self):
+        return self.value/(_g*0.965)
+    
+    def mm_propyleneglycol(self):
+        return self.value/(_g*1.04)
+
+    def preferred(self):
+        return self.mm_propyleneglycol()
