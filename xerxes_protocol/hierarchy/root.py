@@ -21,6 +21,10 @@ class XerxesRoot:
             raise TypeError(f"my_addr type wrong, expected Union[Addr, int, bytes], got {type(my_addr)} instead")
         assert isinstance(network, XerxesNetwork)
         self.network = network
+
+
+    def __repr__(self) -> str:
+        return f"XerxesRoot(my_addr={self._addr}, network={self.network})"
     
     
     def send_msg(self, destination: Addr, payload: bytes) -> None:
