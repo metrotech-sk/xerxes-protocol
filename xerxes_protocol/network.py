@@ -194,7 +194,7 @@ class XerxesNetwork:
             length=msg_len,
             message_id=MsgId(msg_id),
             payload=raw_msg,
-            crc=checksum
+            crc=chs
         )
     
     

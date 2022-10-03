@@ -60,7 +60,7 @@ class Leaf:
         
     
     def fetch(self) -> XerxesMessage:
-        return self.exchange(MsgId.FETCH_MEASUREMENT.bytes)
+        return self.exchange(bytes(MsgId.FETCH_MEASUREMENT))
     
     
     def read_reg(self, reg_addr: int, length: int) -> bytes:
