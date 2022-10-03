@@ -3,7 +3,7 @@
 
 from dataclasses import dataclass
 from xerxes_protocol.ids import MsgId
-from xerxes_protocol.hierarchy.leaves.leaf import Leaf, LeafData, create_properties
+from xerxes_protocol.hierarchy.leaves.leaf import Leaf, LeafData
 from xerxes_protocol.units.angle import Angle
 from xerxes_protocol.units.temp import Celsius
 import struct
@@ -18,15 +18,14 @@ class ILeafData(LeafData):
     temperature_external_2: Celsius
 
 
-@create_properties
 class ILeaf(Leaf):
-    register = Leaf.register
-    register["offset_x"] = [0x10, "f"]
-    register["gain_x"] = [0x14, "f"]
-    register["offset_y"] = [0x18, "f"]
-    register["gain_y"] = [0x1C, "f"]
-    register["t_k"] = [0x20, "f"]
-    register["t_o"] = [0x24, "f"]
+    parameters = Leaf.parameters.copy()
+    parameters["offset_x"] = [0x10, "f"]
+    parameters["gain_x"] = [0x14, "f"]
+    parameters["offset_y"] = [0x18, "f"]
+    parameters["gain_y"] = [0x1C, "f"]
+    parameters["t_k"] = [0x20, "f"]
+    parameters["t_o"] = [0x24, "f"]
     
     
     def fetch(self) -> ILeafData:

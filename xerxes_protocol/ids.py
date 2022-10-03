@@ -42,6 +42,10 @@ class Id:
     def __eq__(self, __o: Id) -> bool:
         assert isinstance(__o, Id), f"Invalid object type received, expected {type(Id(0))}, got {type(__o)} instead."
         return self._id == __o._id
+
+
+    def __hash__(self):
+        return int(self._id)
         
 
 class MsgIdMixin(Id):

@@ -4,32 +4,21 @@
 from dataclasses import dataclass
 import struct
 from typing import List, Union
+from rich import print
+import time
 
 from xerxes_protocol.ids import DevId, MsgId
-from xerxes_protocol.network import Addr, XerxesMessage, XerxesPingReply
+from xerxes_protocol.network import Addr, InvalidMessage, XerxesMessage, XerxesPingReply
 from xerxes_protocol.hierarchy.root import XerxesRoot
 
 
 @dataclass
 class LeafData(object): ...
     # addr: int
-    
-    
-def with_register(cls):
-    for key in cls.register.keys():
-        def __getter(cls):
-            return cls.read_reg_by_key(key)
-        
-        def __setter(cls, __v):
-            return cls.write_reg_by_key(key, __v)
-        
-        setattr(cls, key, property(fget=__getter, fset=__setter))     
-    return cls
-    
 
-@with_register
+
 class Leaf:
-    register = {
+    parameters = {
         "address_offset": [0, "B"],
         "status": [0x80, "B"],
         "error": [0x81, "B"]
@@ -68,27 +57,36 @@ class Leaf:
     def write_reg(self, reg_addr: int, value: bytes) -> bytes:
         reg_addr = int(reg_addr)
         payload = bytes(MsgId.WRITE) + reg_addr.to_bytes(1, "little") + value
-        return self.exchange(payload)
+        
+        self.root.send_msg(self._address, payload)
+        reply = self.root.network.wait_for_reply(0.01*len(payload))  # it takes ~10ms for byte to be written to memory
+        if reply.message_id == MsgId.ACK_OK:
+            return reply
+        else:
+            raise RuntimeError("Register write unsuccesfull.")
     
 
-    def read_reg_by_key(self, key: str) -> Union[int, float]:
-        assert self.register.get(key), f"Key {key} is not in register."
-        val_type = self.register.get(key)[1]
+    def read_param(self, key: str) -> Union[int, float]:
+        assert self.parameters.get(key), f"Key {key} is not in parameters."
+        val_type = self.parameters.get(key)[1]
         rm: XerxesMessage
         if val_type == "B":
-            rm = self.read_reg(self.register.get(key)[0], 1)
+            rm = self.read_reg(self.parameters.get(key)[0], 1)
         else:
-            rm = self.read_reg(self.register.get(key)[0], 4)
+            rm = self.read_reg(self.parameters.get(key)[0], 4)
         
         val = rm.payload
         return struct.unpack(val_type, val)[0]
     
     
-    def write_reg_by_key(self, key: str, value: Union[int, float]) -> None:
-        assert self.register.get(key), f"Key {key} is not in register."
-        
-        payload = struct.pack(self.register.get(key)[1], value)
-        self.write_reg(self.register.get(key)[0], payload)
+    def write_param(self, key: str, value: Union[int, float]) -> None:
+        assert self.parameters.get(key), f"Key {key} is not in parameters."
+        payload = struct.pack(self.parameters.get(key)[1], value)
+        self.write_reg(self.parameters.get(key)[0], payload)
+
+
+    def reset_soft(self):
+        self.exchange(bytes(MsgId.RESET))
 
 
     @property

@@ -1,22 +1,28 @@
 import warnings
 import pytest
-from xerxes_protocol.network import XerxesNetwork, FutureXerxesNetwork
+import serial
+from xerxes_protocol.network import Addr, XerxesNetwork, FutureXerxesNetwork
+from xerxes_protocol.ids import MsgId
 
 
-@pytest.fixture
-def com_is_not_opened(com_port):
-    return com_port is None
-
-
-def test_com_port():
-    if com_is_not_opened:
-        warnings.warn(UserWarning("Serial port is not opened. skipping bunch of tests!"))
-
-
-@pytest.mark.skipif(com_is_not_opened, reason="Requires opened com port")
 class TestNetwork:
-    def test_1(self):
-        assert True
+    def test_1(self, com_port):
+        xn = XerxesNetwork(com_port)
+        xn.init()
+        assert xn.opened
+
+
+    def test_ping(self, com_port, hw_com):
+        xn = XerxesNetwork(com_port).init()
+        xn.send_msg(Addr(0), Addr(1), bytes(MsgId.PING))
+        try:
+            rpl = xn.read_msg()
+            assert rpl.message_id == MsgId.PING_REPLY
+        except TimeoutError:
+            if not hw_com: 
+                pass
+            else:
+                raise
 
 
 class TestFutureNetwork:

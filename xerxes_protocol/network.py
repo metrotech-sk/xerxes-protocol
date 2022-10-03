@@ -102,6 +102,7 @@ class XerxesNetwork:
     _opened = False
 
     def __init__(self, port: serial.Serial) -> None:
+        assert isinstance(port, serial.Serial)
         self._s = port
 
     
@@ -116,6 +117,11 @@ class XerxesNetwork:
         self._opened = True
 
         return self
+
+
+    @property
+    def opened(self) -> bool:
+        return bool(self._opened)
 
 
     def __new__(cls: XerxesNetwork, port: str) -> XerxesNetwork:
@@ -190,6 +196,14 @@ class XerxesNetwork:
             payload=raw_msg,
             crc=checksum
         )
+    
+    
+    def wait_for_reply(self, timeout: float) -> XerxesMessage:
+        old_t = self._s.timeout
+        self._s.timeout = timeout
+        rply = self.read_msg()
+        self._s.timeout = old_t
+        return rply
 
 
     def send_msg(self, source: Addr, destination: Addr, payload: bytes) -> None:    

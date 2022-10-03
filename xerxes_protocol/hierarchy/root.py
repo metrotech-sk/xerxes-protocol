@@ -12,7 +12,7 @@ from xerxes_protocol.network import Addr, XerxesNetwork, NetworkError, XerxesPin
 BROADCAST_ADDR = Addr(DEFAULT_BROADCAST_ADDRESS)
 
 class XerxesRoot:
-    def __init__(self, network: XerxesNetwork, my_addr: Union[int, bytes]=0):        
+    def __init__(self, my_addr: Union[int, bytes], network: XerxesNetwork):        
         if isinstance(my_addr, int) or isinstance(my_addr, bytes):
             self._addr = Addr(my_addr)
         elif isinstance(my_addr, Addr):
@@ -52,6 +52,7 @@ class XerxesRoot:
         start = time.monotonic()
 
         self.network.send_msg(
+            source=self.address,
             destination=addr,
             payload=bytes(MsgId.PING)
         )

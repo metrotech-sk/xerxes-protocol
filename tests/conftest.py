@@ -1,22 +1,38 @@
+import warnings
 import pytest
 import serial
 import os
+import pty
 
 
 @pytest.fixture
-def com_port() -> serial.Serial:
+def port_name():
     if os.name == "nt":
         # som na windows
-        port = "COM14"
+        return "COM14"
     else:
         # on linux machine:
-        port = "/dev/ttyUSB0"
+        return "/dev/ttyUSB0"
     
+
+@pytest.fixture
+def com_port(port_name) -> serial.Serial:
     try:
-        com = serial.Serial(port=port, baudrate=115200, timeout=0.02)
+        com = serial.Serial(port=port_name, baudrate=115200, timeout=0.02)
         yield com
         com.close()
     except serial.SerialException:
-        yield None
+        master, slave = pty.openpty()
+        s_name = os.ttyname(slave)
+        com = serial.Serial(s_name, baudrate=115200, timeout=0.02)
+        yield com
+        com.close
+
     
-        
+
+@pytest.fixture
+def hw_com(com_port, port_name):
+    if com_port.port != port_name:
+        warnings.warn(UserWarning(f"Using mockup COM port: {com_port}"))
+    return com_port.port == port_name
+
