@@ -11,7 +11,7 @@ from xerxes_protocol.hierarchy.leaves.leaf import Leaf
 class TestLeaf:
     def test_generated(self, com_port, hw_com):
         xn = XerxesNetwork(com_port).init()
-        xr = XerxesRoot(xn, Addr(0))
+        xr = XerxesRoot(Addr(0), xn)
         
         l = Leaf(Addr(1), xr)
         if hw_com:
