@@ -126,8 +126,8 @@ class Leaf:
 
     @staticmethod
     def average(array: List[LeafData]) -> LeafData:
+        assert isinstance(array, list)        
         assert isinstance(array[0], LeafData)
-        assert isinstance(array, list)
         
         average = {}
         for data in array:

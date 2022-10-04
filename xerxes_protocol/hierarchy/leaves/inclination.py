@@ -29,7 +29,7 @@ class ILeaf(Leaf):
     
     
     def fetch(self) -> ILeafData:
-        reply = self.exchange(MsgId.FETCH_MEASUREMENT.to_bytes())
+        reply = self.exchange(bytes(MsgId.FETCH_MEASUREMENT))
 
         values = struct.unpack("fffff", reply.payload)  # unpack 5 floats: ang_x, ang_y, temp_sensor, temp_e1, temp_e2
 
