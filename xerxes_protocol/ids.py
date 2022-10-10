@@ -20,6 +20,10 @@ class Id:
         self._id : int = id
 
 
+    def to_bytes(self):
+        return bytes(self)
+
+
     def __bytes__(self) -> bytes:
         id: int = self._id
         byte_length = math.ceil(id.bit_length()/8)
