@@ -21,4 +21,4 @@ class Angle(Unit):
         return f"Angle({self.value})"
     
     def preferred(self):
-        return self.rad
+        return self.degrees
