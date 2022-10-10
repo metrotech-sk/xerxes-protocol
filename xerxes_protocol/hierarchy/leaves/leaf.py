@@ -149,3 +149,11 @@ class Leaf:
             if len(averages) > 0:
                 average_class.__setattr__(key, sum(averages)/len(averages))
         return average_class
+
+
+    def __eq__(self, __o: object) -> bool:
+        return isinstance(__o, Leaf) and self._address == __o.address
+
+    
+    def __hash__(self) -> int:
+        return hash(self.address)
