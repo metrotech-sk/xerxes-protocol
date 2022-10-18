@@ -1,8 +1,3 @@
-import warnings
-import pytest
-import serial
-import pty
-import os
 from xerxes_protocol.hierarchy.leaves.utils import leaf_generator
 from xerxes_protocol.network import Addr, XerxesNetwork
 from xerxes_protocol.hierarchy.root import XerxesRoot

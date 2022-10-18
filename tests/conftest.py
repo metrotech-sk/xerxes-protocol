@@ -2,7 +2,6 @@ import warnings
 import pytest
 import serial
 import os
-import pty
 
 
 @pytest.fixture
@@ -22,11 +21,15 @@ def com_port(port_name) -> serial.Serial:
         yield com
         com.close()
     except serial.SerialException:
-        master, slave = pty.openpty()
-        s_name = os.ttyname(slave)
-        com = serial.Serial(s_name, baudrate=115200, timeout=0.02)
-        yield com
-        com.close
+        if os.name == "nt":    
+            yield None
+        else:
+            import pty
+            master, slave = pty.openpty()
+            s_name = os.ttyname(slave)
+            com = serial.Serial(s_name, baudrate=115200, timeout=0.02)
+            yield com
+            com.close
 
     
 
