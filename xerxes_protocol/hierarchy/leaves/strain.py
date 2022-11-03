@@ -27,7 +27,7 @@ class SLeaf(Leaf):
     def fetch(self) -> SLeafData:
         reply = self.exchange(bytes(MsgId.FETCH_MEASUREMENT))
 
-        values = struct.unpack("ffff", reply.payload)  # unpack 5 floats: pressure in Pa, temp_sensor, temp_e1, temp_e2
+        values = struct.unpack("fff", reply.payload)  # unpack 3 floats: strain, temp_e1, temp_e2
 
         # convert to sensible units
         return SLeafData(
