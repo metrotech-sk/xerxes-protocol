@@ -53,7 +53,7 @@ class XerxesRoot:
         
         
     def ping(self, addr: Addr):
-        start = time.monotonic()
+        start = time.perf_counter()
 
         self.network.send_msg(
             source=self.address,
@@ -61,7 +61,7 @@ class XerxesRoot:
             payload=bytes(MsgId.PING)
         )
         reply = self.network.read_msg()
-        end = time.monotonic()
+        end = time.perf_counter()
         if reply.message_id == MsgId.PING_REPLY:
             rpl = struct.unpack("BBB", reply.payload)
             return XerxesPingReply(
