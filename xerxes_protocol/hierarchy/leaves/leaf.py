@@ -54,24 +54,30 @@ class Leaf:
 
 
     def exchange(self, payload: bytes) -> XerxesMessage:
+        if not isinstance(payload, bytes):
+            try:
+                payload = bytes(payload)
+            finally:
+                pass
         # test if payload is list of uchars
         assert isinstance(payload, bytes)
         self.root.send_msg(self._address, payload)
         return self.root.network.read_msg()
         
     
+    # OBSOLETE, do not use
     def fetch(self) -> XerxesMessage:
         return self.exchange(bytes(MsgId.FETCH_MEASUREMENT))
     
     
-    def read_reg(self, reg_addr: int, length: int) -> bytes:
+    def read_reg(self, reg_addr: int, length: int) -> XerxesMessage:
         length = int(length)
         reg_addr = int(reg_addr)
         payload = bytes(MsgId.READ_REQ) + reg_addr.to_bytes(1, "little") + length.to_bytes(1, "little")
         return self.exchange(payload)
     
     
-    def write_reg(self, reg_addr: int, value: bytes) -> bytes:
+    def write_reg(self, reg_addr: int, value: bytes) -> XerxesMessage:
         reg_addr = int(reg_addr)
         payload = bytes(MsgId.WRITE) + reg_addr.to_bytes(1, "little") + value
         

@@ -28,6 +28,8 @@ class XerxesRoot:
 
 
     def send_msg(self, destination: Addr, payload: bytes) -> None:
+        if not isinstance(payload, bytes):
+            payload = bytes(payload)
         if not isinstance(destination, Addr):
             destination = Addr(destination)
         assert isinstance(payload, bytes)
