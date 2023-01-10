@@ -73,13 +73,13 @@ class Leaf:
     def read_reg(self, reg_addr: int, length: int) -> XerxesMessage:
         length = int(length)
         reg_addr = int(reg_addr)
-        payload = bytes(MsgId.READ_REQ) + reg_addr.to_bytes(1, "little") + length.to_bytes(1, "little")
+        payload = bytes(MsgId.READ_REQ) + reg_addr.to_bytes(2, "little") + length.to_bytes(1, "little")
         return self.exchange(payload)
     
     
     def write_reg(self, reg_addr: int, value: bytes) -> XerxesMessage:
         reg_addr = int(reg_addr)
-        payload = bytes(MsgId.WRITE) + reg_addr.to_bytes(1, "little") + value
+        payload = bytes(MsgId.WRITE) + reg_addr.to_bytes(2, "little") + value
         
         self.root.send_msg(self._address, payload)
         reply = self.root.network.wait_for_reply(0.01*len(payload))  # it takes ~10ms for byte to be written to memory

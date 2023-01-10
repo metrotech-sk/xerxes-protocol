@@ -98,6 +98,10 @@ class MsgId(MsgIdMixin):
     
     # Acknowledge NOK packet
     ACK_NOK                       = MsgIdMixin(0x0003)
+
+    # Broadcast sleep to put all devices into low power state 
+    # The message prototype  is [MSGID_SLEEP_ALL] <uint32_t>[DURATION_US]
+    MSGID_SLEEP                   = MsgIdMixin(0x0004)
     
     RESET                         = MsgIdMixin(0x00FF)
     
