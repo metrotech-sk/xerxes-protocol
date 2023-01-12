@@ -101,7 +101,7 @@ class MsgId(MsgIdMixin):
 
     # Broadcast sleep to put all devices into low power state 
     # The message prototype  is [MSGID_SLEEP_ALL] <uint32_t>[DURATION_US]
-    MSGID_SLEEP                   = MsgIdMixin(0x0004)
+    SLEEP                   = MsgIdMixin(0x0004)
     
     RESET                         = MsgIdMixin(0x00FF)
     
