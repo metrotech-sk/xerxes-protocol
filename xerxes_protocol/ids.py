@@ -91,56 +91,56 @@ class MsgId(MsgIdMixin):
     PING                          = MsgIdMixin(0x0000)
     
     # Reply to ping packet
-    PING_REPLY                    = MsgIdMixin(0x0001)
+    PING_REPLY                    = MsgIdMixin(0x0001)  # 1
     
     # Acknowledge OK packet
-    ACK_OK                        = MsgIdMixin(0x0002)
+    ACK_OK                        = MsgIdMixin(0x0002)  # 2
     
     # Acknowledge NOK packet
-    ACK_NOK                       = MsgIdMixin(0x0003)
+    ACK_NOK                       = MsgIdMixin(0x0003)  # 3
 
     # Broadcast sleep to put all devices into low power state 
     # The message prototype  is [MSGID_SLEEP_ALL] <uint32_t>[DURATION_US]
-    SLEEP                   = MsgIdMixin(0x0004)
+    SLEEP                         = MsgIdMixin(0x0004)  # 4
     
-    RESET                         = MsgIdMixin(0x00FF)
+    RESET                         = MsgIdMixin(0x00FF)  # 255
     
     # Request to send measurements
-    FETCH_MEASUREMENT             = MsgIdMixin(0x0100)
+    FETCH_MEASUREMENT             = MsgIdMixin(0x0100)  # 256
     
     # Synchronisaton message
-    SYNC                          = MsgIdMixin(0x0101)
+    SYNC                          = MsgIdMixin(0x0101)  # 257
     
     # Set register to a value 
     # The message prototype is <MSGID_SET> <REG_ID> <LEN> <BYTE_1> ... <BYTE_N>
-    WRITE                         = MsgIdMixin(0x0200)
+    WRITE                         = MsgIdMixin(0x0200)  # 512
     
     # Read  up to <LEN> bytes from device register, starting at <REG_ID>
     # The request prototype is <MSGID_READ> <REG_ID> <LEN>           
-    READ_REQ                      = MsgIdMixin(0x0201)
-    READ_REPLY                    = MsgIdMixin(0x0202)
+    READ_REQ                      = MsgIdMixin(0x0201)  # 513
+    READ_REPLY                    = MsgIdMixin(0x0202)  # 514
     
     # Pressure value w/o temperature*/ 
-    PRESSURE_Pa                   = MsgIdMixin(0x0400)
+    PRESSURE_Pa                   = MsgIdMixin(0x0400)  # 1024
     
-    STRAIN_24BIT                  = MsgIdMixin(0x1100)
+    STRAIN_24BIT                  = MsgIdMixin(0x1100)  # 4352
 
     # Cutter 1000P/R, 63mm wheel */
-    PULSES                        = MsgIdMixin(0x2A01)
+    PULSES                        = MsgIdMixin(0x2A01)  # 10753
 
     
     # 2 distance values, 0-22000um, no temp
-    DISTANCE_22MM                 = MsgIdMixin(0x4000)
+    DISTANCE_22MM                 = MsgIdMixin(0x4000)  # 16384
     # 2 distance values, 0-225000um, no temp
-    DISTANCE_225MM                = MsgIdMixin(0x4100)
+    DISTANCE_225MM                = MsgIdMixin(0x4100)  # 16640
     
 
     # 2 angle values, X, Y (-90°, 90°)
-    ANGLE_DEG_XY                  = MsgIdMixin(0x3000)
+    ANGLE_DEG_XY                  = MsgIdMixin(0x3000)  # 12288
 
 
     def __repr__(self):
-        return f"MsgId(0x{bytes(self).hex()})"
+        return f"MsgId({int(self)})"
 
 
     def __str__(self):
