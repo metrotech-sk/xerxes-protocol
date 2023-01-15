@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-
 from xerxes_protocol.hierarchy.leaves import ILeaf, ILeafData, PLeaf, PLeafData, SLeaf, SLeafData, DLeaf, DLeafData, Leaf, LeafData
 
 from xerxes_protocol.hierarchy.root import XerxesRoot

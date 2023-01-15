@@ -5,6 +5,9 @@ from typing import Union
 import math
 
 
+MAGIC_UNLOCK = 0x55AA55AA
+
+
 class Id: ...
 
 
@@ -103,12 +106,16 @@ class MsgId(MsgIdMixin):
     # The message prototype  is [MSGID_SLEEP_ALL] <uint32_t>[DURATION_US]
     SLEEP                         = MsgIdMixin(0x0004)  # 4
     
-    RESET                         = MsgIdMixin(0x00FF)  # 255
+    # Soft reset device
+    RESET_SOFT                    = MsgIdMixin(0x00FF)  # 255
+    
+    # Hard reset device a.k.a factory reset
+    RESET_HARD                    = MsgIdMixin(0x00FE)  # 254
     
     # Request to send measurements
     FETCH_MEASUREMENT             = MsgIdMixin(0x0100)  # 256
     
-    # Synchronisaton message
+    # Synchronisation message
     SYNC                          = MsgIdMixin(0x0101)  # 257
     
     # Set register to a value 

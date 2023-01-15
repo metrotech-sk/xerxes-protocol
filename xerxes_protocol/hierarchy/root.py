@@ -54,7 +54,7 @@ class XerxesRoot:
         self.broadcast(payload=bytes(MsgId.SYNC))
         
         
-    def ping(self, addr: Addr):
+    def ping(self, addr: Addr) -> XerxesPingReply:
         start = time.perf_counter()
 
         self.network.send_msg(
