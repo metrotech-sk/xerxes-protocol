@@ -35,10 +35,12 @@ class LeafData(object):
 
 class Leaf:
     parameters = {
-        "address_offset": [0, "B"],
-        "status": [0x80, "B"],
-        "error": [0x81, "B"]
+        "address": [44, "B"],
+        "status": [512, "I"],
+        "error": [520, "I"],
+        "uid": [528, "I"],
     }
+    # TODO: #4 Add parameters for all registers
     
     def __init__(self, addr: Addr, root: XerxesRoot):
         assert(isinstance(addr, Addr))
@@ -109,7 +111,7 @@ class Leaf:
 
 
     def reset_soft(self):
-        self.exchange(bytes(MsgId.RESET))
+        self.root.send_msg(self._address, bytes(MsgId.RESET_SOFT))
 
 
     @property
