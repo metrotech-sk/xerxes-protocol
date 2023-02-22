@@ -3,14 +3,39 @@
 
 from dataclasses import dataclass
 import struct
-from typing import List, Union
+from typing import Union, Any, List
 import time
 
 from xerxes_protocol.ids import DevId, MsgId
 from xerxes_protocol.network import Addr, InvalidMessage, XerxesMessage, XerxesPingReply
 from xerxes_protocol.hierarchy.root import XerxesRoot
 from xerxes_protocol.units.unit import Unit
-from xerxes_protocol.memory import XerxesMemoryMap
+from xerxes_protocol.memory import (
+    XerxesMemoryMap,
+    MemoryElement
+)
+
+
+@dataclass
+class LeafConfig:
+    """Enumeration of all leaf configuration flags.
+
+    This class is an enumeration of all leaf configuration flags. It is used to
+    represent the configuration of a leaf in a convenient way.
+
+    Attributes:
+        freeRun (int): The free run flag.
+        calcStat (int): The calculate statistics flag.
+    
+    Example:
+        >>> leaf = Leaf(Addr(1), XerxesNetwork())
+        >>> leaf.config = LeafConfig.freeRun | LeafConfig.calcStat
+        >>> print(leaf.config)
+        3
+    """
+
+    freeRun: int = 1
+    calcStat: int = 1 << 1
 
 
 @dataclass
@@ -64,9 +89,9 @@ class Leaf:
     """
     
 
-    _memory_map: XerxesMemoryMap
+    _memory_map = XerxesMemoryMap()
 
-    
+
     def __init__(self, addr: Addr, root: XerxesRoot):
         assert (isinstance(addr, Addr))
         assert isinstance(root, XerxesRoot)
@@ -74,8 +99,57 @@ class Leaf:
 
         self.root: XerxesRoot
         self.root = root
+         
+        # create convenient access method for memory map
+        for key in dir(self._memory_map):
+            # skip private attributes
+            if key.startswith("_"):
+                continue
+            
+            attr: Any | MemoryElement = getattr(self._memory_map, key)
+            # if attribute is a memory element, create a convenient access method for it
+            if isinstance(attr, MemoryElement):
+                # key is for example: "gain_pv0"
+                # attr is for example: MemoryElement(0, float_t)
 
-        self._memory_map = XerxesMemoryMap(self.read_reg_net, self.write_reg_net)
+                # define dynamic getter
+                def make_fget(_attr: MemoryElement):
+                    def fget(self):
+                        # read the memory element - the result is a bytes object
+                        _r = self.read_reg_net(_attr.elem_addr, _attr.elem_type._length)
+
+                        # unpack the bytes object into a tuple
+                        return struct.unpack(_attr.elem_type._format, _r)[0]
+                    return fget
+
+                # define dynamic setter
+                def make_fset(_attr: MemoryElement):
+                    def setter(self, value):
+                        assert (
+                            isinstance(value, int) or 
+                            isinstance(value, float)
+                        ), f"Value must be of type float or int, got {type(value)} instead."
+
+                        # check if memory element is writable
+                        assert _attr.write_access, "Memory element is not writable."
+
+                        # pack the value into a bytes object, using the format of the memory element
+                        _bv = struct.pack(_attr.elem_type._format, value)
+
+                        # write the bytes object to the memory element
+                        if not self.write_reg_net(_attr.elem_addr, _bv):
+                            raise RuntimeError("Failed to write to memory element")
+                    return setter
+
+                # set the getter and setter as properties
+                setattr(
+                    self.__class__, 
+                    key, 
+                    property(
+                        make_fget(attr), 
+                        make_fset(attr)
+                    )
+                )
 
 
     def ping(self) -> XerxesPingReply:
