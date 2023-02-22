@@ -15,6 +15,20 @@ from xerxes_protocol.memory import (
     MemoryElement
 )
 
+__author__ = "theMladyPan"
+__version__ = "1.4.0"
+__license__ = "MIT"
+__email__ = "stanislav@rubint.sk"
+__status__ = "Production"
+__package__ = "xerxes_protocol"
+__date__ = "2023-02-22"
+
+__all__ = [
+    "LeafConfig",
+    "LeafData",
+    "Leaf"
+]
+
 
 @dataclass
 class LeafConfig:
@@ -85,7 +99,9 @@ class Leaf:
         root (XerxesRoot): The root node of the network.
     
     Attributes:
-        parameters (dict): A dictionary of parameters of the leaf.
+        _address (Addr): The address of the leaf.
+        _memory_map (XerxesMemoryMap): The memory map of the leaf.
+        root (XerxesRoot): The root node of the network.
     """
     
 
@@ -93,8 +109,13 @@ class Leaf:
 
 
     def __init__(self, addr: Addr, root: XerxesRoot):
-        assert (isinstance(addr, Addr))
-        assert isinstance(root, XerxesRoot)
+        # try to convert addr to Addr if it is an integer
+        if isinstance(addr, int):
+            addr = Addr(addr)
+        
+        # check if addr is an Addr
+        assert isinstance(addr, Addr), f"Address must be of type int or Addr, got {type(addr)} instead."
+        assert isinstance(root, XerxesRoot), f"Root must be of type XerxesRoot, got {type(root)} instead."
         self._address = addr
 
         self.root: XerxesRoot
@@ -153,6 +174,7 @@ class Leaf:
 
 
     def ping(self) -> XerxesPingReply:
+        """Pings the leaf. Returns the reply. See XerxesRoot.ping for more information."""
         return self.root.ping(bytes(self.address))
 
 
@@ -225,30 +247,38 @@ class Leaf:
         return self.write_reg(reg_addr, value).message_id == MsgId.ACK_OK
     
 
-    def read_param(self, key: str) -> Union[int, float]:
-        return getattr(self._memory_map, key)
-    
-    
-    def write_param(self, key: str, value: Union[int, float]) -> None:
-        setattr(self._memory_map, key, value)
-
-
-    def reset_soft(self):
+    def reset_soft(self) -> None:
         """Restarts the leaf."""
 
         self.root.send_msg(self._address, bytes(MsgId.RESET_SOFT))
 
 
     @property
-    def address(self):
+    def address(self) -> Addr:
         return self._address
 
 
     @address.setter
-    def address(self, __v):
-        raise NotImplementedError("Address should not be changed")  # TODO: #3 implement address setter via reg exchange
-    
+    def address(self, _addr: int) -> None:
+        assert (
+            isinstance(_addr, int)
+        ), f"Address must be of type int, got {type(_addr)} instead."
 
+        try:
+            # try to set the address to the new value
+            self.address = int(_addr)
+            # if the address was set, set the address property to the new value
+            self._address = Addr(_addr)
+
+        except ValueError:
+            raise ValueError(f"Address must be of type int, got {type(_addr)} instead.")
+        
+        except AttributeError:
+            raise AttributeError("Address can not be set right now.")
+
+        except TimeoutError:
+            raise TimeoutError("Timed out while setting address. Nothing was written to the leaf.")
+        
 
     def __repr__(self) -> str:
         return f"Leaf(addr={self.address}, root={self.root})"

@@ -37,22 +37,18 @@ __date__ = "2023-02-22"
 
 class ChecksumError(Exception): 
     """Raised when the checksum of a message is invalid."""
-    ...
 
 
 class MessageIncomplete(Exception): 
     """Raised when the message is incomplete."""
-    ...
 
 
 class InvalidMessage(Exception): 
     """Raised when the message is invalid."""
-    ...
 
 
 class NetworkError(Exception): 
     """Raised when the network is not ready or any other network error occurs."""
-    ...
 
 
 def checksum(message: bytes) -> bytes:
@@ -64,6 +60,7 @@ def checksum(message: bytes) -> bytes:
     Returns:
         bytes: Checksum of the message.
     """
+
     summary = sum(message)
     summary ^= 0xFF  # get complement of summary
     summary += 1  # get 2's complement
@@ -85,6 +82,7 @@ class Addr(int):
         AssertionError: If the address is negative.
         AssertionError: If the address is greater than 255. 
     """
+
     def __new__(cls, addr: Union[int, bytes]) -> None:
         if isinstance(addr, bytes):
             addr = int(addr.hex(), 16)
@@ -98,6 +96,7 @@ class Addr(int):
 
     def to_bytes(self):
         """Converts the address to bytes."""
+
         return int(self).to_bytes(1, "little")
 
 
@@ -130,6 +129,7 @@ class XerxesMessage:
         latency (float): Latency of the message
         crc (int): Checksum of the message        
     """
+
     source: Addr
     destination: Addr
     length: int
@@ -149,6 +149,7 @@ class XerxesPingReply:
         v_min (int): Minor version of the device
         latency (float): Latency of the message
     """
+
     dev_id: DevId
     v_maj: int
     v_min: int
@@ -167,6 +168,7 @@ class FutureXerxesNetwork:
     
     Used for configuring the network before the real XerxesNetwork is created.   
     """
+
     def send_msg(self, __dst, __pld) -> None:
         raise NotImplementedError("You should assign real XerxesNetwork instead of FutureXN")
     
@@ -181,7 +183,6 @@ class FutureXerxesNetwork:
 
 class XerxesNetwork: 
     """Mock used for type hinting."""
-    ...
 
 
 class XerxesNetwork:
@@ -189,6 +190,11 @@ class XerxesNetwork:
 
     Args:
         port (str): Serial port name
+
+    Attributes:
+        _ic (int): Internal counter for message ids
+        _instances (dict): Dictionary of instances of XerxesNetwork
+        _opened (bool): True if the port is opened, False otherwise
     
     Raises:
         AssertionError: If the port is not a serial.Serial object
@@ -217,9 +223,11 @@ class XerxesNetwork:
         XerxesMessage(source=Addr(0x01), destination=Addr(0x00), length=12, message_id=MsgId(0x00), payload=b'Hello World!', latency=0.0, crc=0)
 
     """
+
     _ic = 0
     _instances = {}
     _opened = False
+
 
     def __init__(self, port: serial.Serial) -> None:
         assert isinstance(port, serial.Serial)
@@ -246,21 +254,27 @@ class XerxesNetwork:
         self._opened = True
 
         return self
-    
+     
+
     @property
     def timeout(self) -> float:
         """Timeout for serial port in seconds."""
+
         return self._s.timeout
     
+
     @timeout.setter
     def timeout(self, value: float) -> None:
         """Timeout for serial port in seconds."""
+
         self._s.timeout = value
         self._s._reconfigure_port()
+
 
     @property
     def opened(self) -> bool:
         """Returns True if the serial port is opened."""
+
         return bool(self._opened)
 
 
@@ -397,7 +411,7 @@ class XerxesNetwork:
 
         msg = SOH  # SOH
         msg += (len(payload) + 5).to_bytes(1, "little")  # LEN
-        msg += bytes(source) # FROM
+        msg += bytes(source)  # FROM
         msg += bytes(destination)  # DST
         msg += payload
         msg += checksum(msg)
