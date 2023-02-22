@@ -1,6 +1,6 @@
-from socket import MsgFlag
 import pytest
 import xerxes_protocol.ids as ids
+
 
 class TestDevid:
     def test_type_1(self):
@@ -56,4 +56,4 @@ class TestMsgid:
         
     def test_ack_ok(self):
         pid = ids.MsgId.ACK_OK
-        assert bytes(pid) == b"\x02\x00" 
+        assert bytes(pid) == b"\x02\x00"

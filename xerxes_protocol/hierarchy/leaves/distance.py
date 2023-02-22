@@ -21,13 +21,6 @@ class DLeafData(LeafData):
 
 
 class DLeaf(Leaf):
-    parameters = Leaf.parameters.copy()
-    parameters["min_1"] = [0x10, "f"]
-    parameters["max_1"] = [0x14, "f"]
-    parameters["min_2"] = [0x18, "f"]
-    parameters["max_2"] = [0x1C, "f"]
-    
-    
     def fetch(self) -> DLeafData:
         reply = self.exchange(bytes(MsgId.FETCH_MEASUREMENT))
 
