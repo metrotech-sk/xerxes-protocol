@@ -160,8 +160,8 @@ class  Leaf:
                 def make_fget(_attr: MemoryElement, _key: str):
                     def fget(self):
                         _log.debug(
-                            f"Reading memory element {_key} at address:{_attr.elem_addr}, "
-                            f"type:{_attr.elem_type._format}."
+                            f"Reading memory element:{_key} at address:{_attr.elem_addr},"
+                            f" type:{_attr.elem_type._format}."
                         )
                         # read the memory element - the result is a bytes object
                         _r = self.read_reg_net(_attr.elem_addr, _attr.elem_type._length)
@@ -187,8 +187,8 @@ class  Leaf:
                         # pack the value into a bytes object, using the format of the memory element
                         _bv = struct.pack(_attr.elem_type._format, value)
                         _log.debug(
-                            f"Writing memory element {_key} at address:{_attr.elem_addr},"
-                            f"type:{_attr.elem_type._format}, value:{value}."
+                            f"Writing memory element:{_key} at address:{_attr.elem_addr},"
+                            f" type:{_attr.elem_type._format}, value:{value}."
                         )
                         # write the bytes object to the memory element
                         if not self.write_reg_net(_attr.elem_addr, _bv):

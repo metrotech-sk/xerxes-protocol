@@ -343,12 +343,20 @@ class XerxesNetwork:
 
         # read and unpack all data into array, assuming it is uint32_t, little-endian
         raw_msg = bytes(0)
-        for i in range(int(msg_len - 7)):
-            next_byte = self._s.read(1)  # TODO: read multiple bytes at once for fuck sake
-            if (len(next_byte) != 1):
-                raise MessageIncomplete("Received message incomplete")
-            raw_msg += next_byte
-            chs += int(next_byte.hex(), 16)
+        
+        # for i in range(int(msg_len - 7)):
+        #     next_byte = self._s.read(1)  # WIP: read multiple bytes at once for fuck sake
+        #     if (len(next_byte) != 1):
+        #         raise MessageIncomplete("Received message incomplete")
+        #     raw_msg += next_byte
+        #     chs += int(next_byte.hex(), 16)
+
+        raw_msg += self._s.read(msg_len - 7)
+        if len(raw_msg) != msg_len - 7:
+            raise MessageIncomplete("Received message incomplete")
+        
+        for _b in raw_msg:
+            chs += _b
         
         # read checksum
         rcvd_chks = self._s.read(1)

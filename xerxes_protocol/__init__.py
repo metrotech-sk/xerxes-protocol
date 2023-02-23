@@ -55,5 +55,12 @@ from xerxes_protocol.memory import (
     MemoryReadOnly,
     XerxesMemoryMap
 )
+from xerxes_protocol.error_flags import (
+    ERROR_MASK_UART_OVERLOAD,
+    ERROR_MASK_CPU_OVERLOAD,
+    ERROR_MASK_BUS_COLLISION,
+    ERROR_MASK_WATCHDOG_TIMEOUT,
+    ERROR_MASK_SENSOR_OVERLOAD
+)
 
 from xerxes_protocol.debug_serial import DebugSerial
