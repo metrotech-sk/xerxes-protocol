@@ -17,13 +17,6 @@ class SLeafData(LeafData):
 
 
 class SLeaf(Leaf):
-    parameters = Leaf.parameters.copy()
-    parameters["offset"] = [0x10, "f"]
-    parameters["gain"] = [0x14, "f"]
-    parameters["t_k"] = [0x18, "f"]
-    parameters["t_o"] = [0x1C, "f"]
-    
-    
     def fetch(self) -> SLeafData:
         reply = self.exchange(bytes(MsgId.FETCH_MEASUREMENT))
 

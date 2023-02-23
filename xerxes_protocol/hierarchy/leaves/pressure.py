@@ -18,13 +18,6 @@ class PLeafData(LeafData):
 
 
 class PLeaf(Leaf):
-    parameters = Leaf.parameters.copy()
-    parameters["offset"] = [0x10, "f"]
-    parameters["gain"] = [0x14, "f"]
-    parameters["t_k"] = [0x18, "f"]
-    parameters["t_o"] = [0x1C, "f"]
-    
-    
     def fetch(self) -> PLeafData:
         reply = self.exchange(bytes(MsgId.FETCH_MEASUREMENT))
 
