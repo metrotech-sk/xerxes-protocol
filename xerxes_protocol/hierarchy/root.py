@@ -14,8 +14,12 @@ from xerxes_protocol.network import (
     Addr,
     XerxesNetwork,
     NetworkError,
-    XerxesPingReply
+    XerxesPingReply,
+    MessageIncomplete,
+    ChecksumError
 )
+import logging
+_log = logging.getLogger(__name__)
 
 
 __author__ = "theMladyPan"
@@ -110,35 +114,63 @@ class XerxesRoot:
         self.broadcast(payload=bytes(MsgId.SYNC))
 
 
-    def ping(self, addr: Addr) -> XerxesPingReply:
+    def ping(self, addr: Addr | int | bytes, attempts: int = 3) -> XerxesPingReply:
         """Ping a node on the network.
 
         Args:
-            addr (Addr): The address of the node to ping.
+            addr (Addr | int | bytes): The address of the node to ping.
         
         Returns:
             XerxesPingReply: The ping reply. Contains the latency, the device
                 ID, and the protocol version.
         """
-        start = time.perf_counter()
 
-        self.network.send_msg(
-            source=self.address,
-            destination=addr,
-            payload=bytes(MsgId.PING)
-        )
-        reply = self.network.read_msg()
-        end = time.perf_counter()
-        if reply.message_id == MsgId.PING_REPLY:
-            rpl = struct.unpack("BBB", reply.payload)
-            return XerxesPingReply(
-                dev_id=DevId(rpl[0]),
-                v_maj=int(rpl[1]),
-                v_min=int(rpl[2]),
-                latency=(end - start)
+        # sanitize the number of attempts
+        attempts = max(1, int(attempts))
+
+        # sanitize the address
+        if isinstance(addr, int):
+            addr = Addr(addr)
+        
+        addr = bytes(addr)
+        
+        assert isinstance(addr, bytes), f"addr type wrong, expected int, bytes or Addr, got {type(addr)} instead"
+
+        for attempt in range(int(attempts)):
+            start = time.perf_counter()
+
+            self.network.send_msg(
+                source=self.address,
+                destination=addr,
+                payload=bytes(MsgId.PING)
             )
-        else:
-            NetworkError("Invalid reply received ({reply.message_id})")
+            try:
+                reply = self.network.read_msg()
+            except TimeoutError:
+                _log.debug(f"Timeout while waiting for ping reply, attempt {attempt + 1} of {attempts}")
+                continue
+            except MessageIncomplete:
+                _log.debug(f"Message incomplete while waiting for ping reply, attempt {attempt + 1} of {attempts}")
+                continue
+            except ChecksumError:
+                _log.debug(f"Checksum error while waiting for ping reply, attempt {attempt + 1} of {attempts}")
+                continue
+
+            end = time.perf_counter()
+
+            if reply.message_id == MsgId.PING_REPLY:
+                rpl = struct.unpack("BBB", reply.payload)
+                ping_reply = XerxesPingReply(
+                    dev_id=DevId(rpl[0]),
+                    v_maj=int(rpl[1]),
+                    v_min=int(rpl[2]),
+                    latency=(end - start)
+                )
+                return ping_reply
+            else:
+                raise NetworkError("Invalid reply received ({reply.message_id})")
+            
+        raise TimeoutError("No ping reply received")
 
 
     @staticmethod

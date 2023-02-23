@@ -217,9 +217,9 @@ class  Leaf:
         raise NotImplementedError("Cannot set network of leaf. Change root network instead.")
 
 
-    def ping(self) -> XerxesPingReply:
+    def ping(self, attempts: int = 3) -> XerxesPingReply:
         """Pings the leaf. Returns the reply. See XerxesRoot.ping for more information."""
-        return self.root.ping(bytes(self.address))
+        return self.root.ping(self.address, attempts)
     
 
     def _send_msg_to_leaf(self, payload: bytes) -> int | None:
