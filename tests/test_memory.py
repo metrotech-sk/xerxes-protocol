@@ -1,19 +1,11 @@
-import pytest
-import serial
-import time
 from xerxes_protocol.memory import (
-    ElementType,
     uint64_t,
     uint32_t,
     uint16_t,
     uint8_t,
     float_t,
     double_t,
-    MemoryNonVolatile,
-    MemoryVolatile,
-    MemoryReadOnly,
     MemoryElement,
-    XerxesMemoryMap
 )
 
 
@@ -46,7 +38,7 @@ class TestElemType:
 
     def test_memory_element(self):
         me = MemoryElement(0, uint64_t, False)
-        assert me.mem_addr == 0
-        assert me.mem_type == uint64_t
+        assert me.elem_addr == 0
+        assert me.elem_type == uint64_t
         assert me.write_access is False
         assert me.can_write() is False
