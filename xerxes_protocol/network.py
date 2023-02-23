@@ -220,7 +220,7 @@ class XerxesNetwork:
         >>> # read a message
         >>> msg = network.read_msg()
         >>> print(msg)
-        XerxesMessage(source=Addr(0x01), destination=Addr(0x00), length=12, message_id=MsgId(0x00), payload=b'Hello World!', latency=0.0, crc=0)
+        XerxesMessage(source=Addr(0x01), destination=Addr(0x00), length=12, message_id=MsgId(0x00), payload=b'\x04\x01\x04', latency=0.015, crc='U')
 
     """
 
@@ -286,7 +286,12 @@ class XerxesNetwork:
 
 
     def __repr__(self) -> str:
-        return f"XerxesNetwork(port={self._s})"
+        _repr = (
+            f"XerxesNetwork(port=Serial(port='{self._s.port}',"
+            f"baudrate={self._s.baudrate}, timeout={self._s.timeout}))"
+        )
+        return _repr
+                
 
 
     def __del__(self):
@@ -339,7 +344,7 @@ class XerxesNetwork:
         # read and unpack all data into array, assuming it is uint32_t, little-endian
         raw_msg = bytes(0)
         for i in range(int(msg_len - 7)):
-            next_byte = self._s.read(1)
+            next_byte = self._s.read(1)  # TODO: read multiple bytes at once for fuck sake
             if (len(next_byte) != 1):
                 raise MessageIncomplete("Received message incomplete")
             raw_msg += next_byte
@@ -385,34 +390,55 @@ class XerxesNetwork:
         return rply
 
 
-    def send_msg(self, source: Addr, destination: Addr, payload: bytes) -> None:    
+    def send_msg(self, source: int | bytes | Addr, destination: int | bytes | Addr, payload: bytes) -> int | None:    
         """Send message to device
 
         Args:
-            source (Addr): source address
-            destination (Addr): destination address
-            payload (bytes): message payload (max 255-7 = 248 bytes)
+            source (int | bytes | Addr): source address
+            destination (int | bytes | Addr): destination address
+            payload (bytes): payload in bytes - must be less 247 bytes
         
         Raises:
             AssertionError: if serial port is not opened
+            AssertionError: if payload is not bytes
+            AssertionError: if source or destination is not int, bytes or Addr
 
         Returns:
-            None
+            int | None: number of bytes sent or None if serial port is not opened or message was not sent
         """
-        assert self._opened, "Serial port not opened yet. Call .init() first"
-
-        if not isinstance(destination, Addr):
-            destination = Addr(destination)
-        if not isinstance(source, Addr):
+        
+        assert self._opened, "Serial port was not opened yet. Call .init() on XerxesNetwork object first"
+        
+        # if source or destination is int, convert to Addr
+        if type(source) is int:
             source = Addr(source)
+
+        if type(destination) is int:
+            destination = Addr(destination)
+        
+        # payload must be in bytes
         assert isinstance(payload, bytes)
+
+        # convert source and destination to bytes if they are not
+        if isinstance(source, bytes):
+            _b_source = source
+        else:
+            _b_source = bytes(source)
+
+        if isinstance(destination, bytes):
+            _b_destination = destination
+        else:
+            _b_destination = bytes(destination)
             
+        # create message
         SOH = b"\x01"
 
-        msg = SOH  # SOH
-        msg += (len(payload) + 5).to_bytes(1, "little")  # LEN
-        msg += bytes(source)  # FROM
-        msg += bytes(destination)  # DST
-        msg += payload
-        msg += checksum(msg)
-        self._s.write(msg)
+        msg = SOH  # Start of header
+        msg += (len(payload) + 5).to_bytes(1, "little")  # Length of the message
+        msg += _b_source  # From - sender
+        msg += _b_destination  # Destination address - recipient
+        msg += payload  # Payload without checksum
+        msg += checksum(msg)  # Checksum
+
+        # send message and return number of bytes sent
+        return self._s.write(msg) 

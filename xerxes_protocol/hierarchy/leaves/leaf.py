@@ -2,18 +2,33 @@
 # -*- coding: utf-8 -*-
 
 from dataclasses import dataclass
-import struct
-from typing import Union, Any, List
-import time
+from typing import (
+    Any,
+    List
+)
 
-from xerxes_protocol.ids import DevId, MsgId
-from xerxes_protocol.network import Addr, InvalidMessage, XerxesMessage, XerxesPingReply
+from xerxes_protocol.ids import (
+    MsgId,
+    MAGIC_UNLOCK
+)
+from xerxes_protocol.network import (
+    Addr,
+    XerxesMessage,
+    XerxesPingReply,
+    XerxesNetwork,
+    NetworkError
+)
 from xerxes_protocol.hierarchy.root import XerxesRoot
 from xerxes_protocol.units.unit import Unit
 from xerxes_protocol.memory import (
     XerxesMemoryMap,
     MemoryElement
 )
+
+import struct
+import logging
+_log = logging.getLogger(__name__)
+
 
 __author__ = "theMladyPan"
 __version__ = "1.4.0"
@@ -28,6 +43,14 @@ __all__ = [
     "LeafData",
     "Leaf"
 ]
+
+
+class WriteError(Exception):
+    """Base class for all write errors."""
+
+
+class WriteErrorReadOnly(WriteError):
+    """Raised when trying to write to a read-only memory."""
 
 
 @dataclass
@@ -48,6 +71,7 @@ class LeafConfig:
         3
     """
 
+    clean = 0
     freeRun: int = 1
     calcStat: int = 1 << 1
 
@@ -88,7 +112,7 @@ class LeafData(object):
         return d
 
 
-class Leaf:
+class  Leaf:
     """Base class for all leaf classes.
 
     This class is the base class for all leaf classes. It is used to represent
@@ -108,7 +132,7 @@ class Leaf:
     _memory_map = XerxesMemoryMap()
 
 
-    def __init__(self, addr: Addr, root: XerxesRoot):
+    def __init__(self, addr: int | Addr, root: XerxesRoot):
         # try to convert addr to Addr if it is an integer
         if isinstance(addr, int):
             addr = Addr(addr)
@@ -118,8 +142,7 @@ class Leaf:
         assert isinstance(root, XerxesRoot), f"Root must be of type XerxesRoot, got {type(root)} instead."
         self._address = addr
 
-        self.root: XerxesRoot
-        self.root = root
+        self.root: XerxesRoot = root
          
         # create convenient access method for memory map
         for key in dir(self._memory_map):
@@ -134,17 +157,23 @@ class Leaf:
                 # attr is for example: MemoryElement(0, float_t)
 
                 # define dynamic getter
-                def make_fget(_attr: MemoryElement):
+                def make_fget(_attr: MemoryElement, _key: str):
                     def fget(self):
+                        _log.debug(
+                            f"Reading memory element {_key} at address:{_attr.elem_addr}, "
+                            f"type:{_attr.elem_type._format}."
+                        )
                         # read the memory element - the result is a bytes object
                         _r = self.read_reg_net(_attr.elem_addr, _attr.elem_type._length)
 
                         # unpack the bytes object into a tuple
-                        return struct.unpack(_attr.elem_type._format, _r)[0]
+                        _r_val = struct.unpack(_attr.elem_type._format, _r)[0]
+                        _log.debug(f"Read value: {_r_val}")
+                        return _r_val
                     return fget
 
                 # define dynamic setter
-                def make_fset(_attr: MemoryElement):
+                def make_fset(_attr: MemoryElement, _key: str):
                     def setter(self, value):
                         assert (
                             isinstance(value, int) or 
@@ -152,11 +181,15 @@ class Leaf:
                         ), f"Value must be of type float or int, got {type(value)} instead."
 
                         # check if memory element is writable
-                        assert _attr.write_access, "Memory element is not writable."
+                        if not _attr.write_access:
+                            raise WriteErrorReadOnly("Memory element is not writable.")
 
                         # pack the value into a bytes object, using the format of the memory element
                         _bv = struct.pack(_attr.elem_type._format, value)
-
+                        _log.debug(
+                            f"Writing memory element {_key} at address:{_attr.elem_addr},"
+                            f"type:{_attr.elem_type._format}, value:{value}."
+                        )
                         # write the bytes object to the memory element
                         if not self.write_reg_net(_attr.elem_addr, _bv):
                             raise RuntimeError("Failed to write to memory element")
@@ -167,15 +200,34 @@ class Leaf:
                     self.__class__, 
                     key, 
                     property(
-                        make_fget(attr), 
-                        make_fset(attr)
+                        make_fget(attr, key), 
+                        make_fset(attr, key)
                     )
                 )
+
+
+    @property
+    def network(self) -> XerxesNetwork:
+        """The network of the leaf."""
+        return self.root.network
+
+
+    @network.setter
+    def network(self, network: XerxesNetwork):
+        raise NotImplementedError("Cannot set network of leaf. Change root network instead.")
 
 
     def ping(self) -> XerxesPingReply:
         """Pings the leaf. Returns the reply. See XerxesRoot.ping for more information."""
         return self.root.ping(bytes(self.address))
+    
+
+    def _send_msg_to_leaf(self, payload: bytes) -> int | None:
+        """Sends a message to the leaf."""
+        if not isinstance(payload, bytes):
+            payload = bytes(payload)
+
+        return self.root.send_msg(self._address, payload)
 
 
     def exchange(self, payload: bytes) -> XerxesMessage:
@@ -188,15 +240,11 @@ class Leaf:
             XerxesMessage: The message received from the leaf.
         """
 
-        if not isinstance(payload, bytes):
-            try:
-                payload = bytes(payload)
-            finally:
-                pass
-        # test if payload is list of uchars
-        assert isinstance(payload, bytes)
-        self.root.send_msg(self._address, payload)
-        return self.root.network.read_msg()
+        if self._send_msg_to_leaf(payload):
+            # if message was sent successfully, read the reply
+            return self.root.network.read_msg()
+        else:
+            raise NetworkError("Failed to send message to leaf.")
             
     
     def read_reg_net(self, reg_addr: int, length: int) -> bytes:
@@ -237,21 +285,49 @@ class Leaf:
         payload = bytes(MsgId.WRITE) + reg_addr.to_bytes(2, "little") + value
         
         self.root.send_msg(self._address, payload)
-        reply = self.root.network.wait_for_reply(0.01 * len(payload))  # it takes ~10ms for byte to be written to memory
+        reply = self.root.network.wait_for_reply(timeout=0.1)  # it takes ~60ms for flash to be re-written
         return reply
     
 
     def write_reg_net(self, reg_addr: int, value: bytes) -> bool:
         """Encapsulates the write_reg method to return only the payload."""
 
-        return self.write_reg(reg_addr, value).message_id == MsgId.ACK_OK
+        if(self.write_reg(reg_addr, value).message_id == MsgId.ACK_OK):
+            _log.debug("Write successful.")
+            return True
+        else:
+            _log.debug("Write failed.")
+            return False
     
 
     def reset_soft(self) -> None:
         """Restarts the leaf."""
-
+        
+        _log.info("Resetting leaf...")
         self.root.send_msg(self._address, bytes(MsgId.RESET_SOFT))
 
+    
+    def reset_hard(self) -> None:
+        """Resets the leaf to factory settings."""
+
+        # write magic number to memory lock register to unlock memory
+        _log.debug("Unlocking memory for hard reset")
+        self.memory_lock = MAGIC_UNLOCK
+        _log.debug("Memory unlocked, resetting leaf to factory settings.")
+        self.root.send_msg(self._address, bytes(MsgId.RESET_HARD))
+
+    
+    def sleep(self, duration_us: int | float) -> None:
+        """Puts the leaf to sleep."""
+        duration_us = int(duration_us)
+        assert duration_us >= 0, "Duration must be positive."
+
+        duration_b = struct.pack("I", duration_us)
+        sleep_msg_b = bytes(MsgId.SLEEP) + duration_b
+        # send the sleep command to the leaf
+        # the leaf will go to sleep immediately after receiving the command and will not reply
+        self._send_msg_to_leaf(sleep_msg_b)
+                
 
     @property
     def address(self) -> Addr:
@@ -266,9 +342,12 @@ class Leaf:
 
         try:
             # try to set the address to the new value
-            self.address = int(_addr)
-            # if the address was set, set the address property to the new value
+            _log.debug(f"Setting address from: {self.device_address} to: {_addr}.")
+            self.device_address = int(_addr)
+            
             self._address = Addr(_addr)
+            _log.debug(f"Address set to: {self.device_address}")
+            # if the address was set, set the address property to the new value
 
         except ValueError:
             raise ValueError(f"Address must be of type int, got {type(_addr)} instead.")

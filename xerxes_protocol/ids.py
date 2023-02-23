@@ -136,24 +136,42 @@ class MsgId(MsgIdMixin):
     """Message id's enum used in the Xerxes protocol.
     
     Attributes:
-        PING (MsgIdMixin): Ping packet
-        PING_REPLY (MsgIdMixin): Reply to ping packet
-        ACK_OK (MsgIdMixin): Acknowledge OK packet
-        ACK_NOK (MsgIdMixin): Acknowledge NOK packet
-        SLEEP (MsgIdMixin): Broadcast sleep to put all devices into low power state
-        RESET_SOFT (MsgIdMixin): Soft reset device
-        RESET_HARD (MsgIdMixin): Hard reset device a.k.a factory reset
-        FETCH_MEASUREMENT (MsgIdMixin): Request to send measurements
-        SYNC (MsgIdMixin): Synchronisation message
-        WRITE (MsgIdMixin): Set register to a value
-        READ_REQ (MsgIdMixin): Read up to <LEN> bytes from device register, starting at <REG_ID>
-        READ_REPLY (MsgIdMixin): Reply to read request
-        PRESSURE (MsgIdMixin): Pressure value
-        STRAIN (MsgIdMixin): Strain value
-        PULSES (MsgIdMixin): Number of pulses (counters)
-        DISTANCE_22MM (MsgIdMixin): Distance value for 22mm sensor
-        DISTANCE_225MM (MsgIdMixin): Distance value for 225mm sensor
-        ANGLE_DEG_XY (MsgIdMixin): Angle value for X and Y axis in degrees
+        PING (MsgIdMixin): 
+            Ping packet
+        PING_REPLY (MsgIdMixin): 
+            Reply to ping packet
+        ACK_OK (MsgIdMixin): 
+            Acknowledge OK packet
+        ACK_NOK (MsgIdMixin): 
+            Acknowledge NOK packet
+        SLEEP (MsgIdMixin): 
+            Broadcast sleep to put all devices into low power state
+        RESET_SOFT (MsgIdMixin): 
+            Soft reset device
+        RESET_HARD (MsgIdMixin): 
+            Hard reset device a.k.a factory reset
+        FETCH_MEASUREMENT (MsgIdMixin): 
+            Request to send measurements
+        SYNC (MsgIdMixin): 
+            Synchronisation message
+        WRITE (MsgIdMixin): 
+            Set register to a value
+        READ_REQ (MsgIdMixin): 
+            Read up to <LEN> bytes from device register, starting at <REG_ID>
+        READ_REPLY (MsgIdMixin): 
+            Reply to read request
+        PRESSURE (MsgIdMixin): 
+            Pressure value
+        STRAIN (MsgIdMixin): 
+            Strain value
+        PULSES (MsgIdMixin): 
+            Number of pulses (counters)
+        DISTANCE_22MM (MsgIdMixin): 
+            Distance value for 22mm sensor
+        DISTANCE_225MM (MsgIdMixin): 
+            Distance value for 225mm sensor
+        ANGLE_DEG_XY (MsgIdMixin): 
+            Angle value for X and Y axis in degrees
     """
     
     # Ping packet
@@ -224,6 +242,8 @@ class DevId(DevIdMixin):
     """Device id's enum used in the Xerxes protocol.
     
     Attributes:
+        NULL (DevIdMixin):
+            Null device - should not be used - used for debugging
         PRESSURE_600MBAR (DevIdMixin): 
             Pressure sensor range 0-600mbar, output in Pa, 2 external temperature sensors -50/150°C output: mK
         PRESSURE_60MBAR (DevIdMixin): 
@@ -234,6 +254,8 @@ class DevId(DevIdMixin):
             I/O device, 8DI/8DO (8xDigital Input, 8xDigital Output)
         IO_4DI_4DO (DevIdMixin): 
             I/O device, 4DI/4DO (4xDigital Input, 4xDigital Output)
+        IO_4AI (DevIdMixin):
+            I/O device, 4AI (4xAnalog Input)
         ANGLE_XY_90 (DevIdMixin): 
             Angle sensor, X, Y (-90°, 90°)
         ANGLE_XY_30 (DevIdMixin): 
@@ -253,6 +275,7 @@ class DevId(DevIdMixin):
         AIR_POL_CO_NOX_VOC_PM_GPS (DevIdMixin): 
             Air pollution sensor, CO, NOx, VOC, PM, with GPS location
     """
+    NULL                        = DevIdMixin(0x00)
     # Pressure sensors */
     # pressure sensor range 0-600mbar, output in Pa, 2 external temperature sensors -50/150°C output: mK
     PRESSURE_600MBAR            = DevIdMixin(0x03)
@@ -269,7 +292,9 @@ class DevId(DevIdMixin):
 
     # I/O device, 4DI/4DO (4xDigital Input, 4xDigital Output)
     IO_4DI_4DO                  = DevIdMixin(0x21)
-    
+
+    # I/O device, 4AI (4xAnalog Input)
+    IO_4AI                      = DevIdMixin(0x22)
     
     # Inclinometers and accelerometers
     # Inclinometer SCL3300

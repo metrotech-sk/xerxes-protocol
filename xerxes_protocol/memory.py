@@ -181,7 +181,7 @@ class MemoryNonVolatile(XerxesMemoryType):
 
     desired_cycle_time_us = MemoryElement(OFFSET_DESIRED_CYCLE_TIME, uint32_t)
     device_address = MemoryElement(OFFSET_ADDRESS, uint8_t)
-    config = MemoryElement(OFFSET_CONFIG_BITS, uint8_t)
+    device_config = MemoryElement(OFFSET_CONFIG_BITS, uint8_t)
     
 
 class MemoryVolatile(XerxesMemoryType):
@@ -240,9 +240,9 @@ class MemoryReadOnly(XerxesMemoryType):
         net_cycle_time_us   (uint32_t): The network cycle time in microseconds.
     """
 
-    status = MemoryElement(STATUS_OFFSET, uint64_t, write_access=False)
-    error = MemoryElement(ERROR_OFFSET, uint64_t, write_access=False)
-    uid = MemoryElement(UID_OFFSET, uint64_t, write_access=False)
+    device_status = MemoryElement(STATUS_OFFSET, uint64_t, write_access=False)
+    device_error = MemoryElement(ERROR_OFFSET, uint64_t, write_access=False)
+    device_uid = MemoryElement(UID_OFFSET, uint64_t, write_access=False)
 
     net_cycle_time_us = MemoryElement(OFFSET_NET_CYCLE_TIME, uint32_t, write_access=False)
 

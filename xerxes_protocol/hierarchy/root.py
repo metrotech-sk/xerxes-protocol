@@ -65,24 +65,26 @@ class XerxesRoot:
         return f"XerxesRoot(my_addr={self._addr}, network={self.network})"
 
 
-    def send_msg(self, destination: Addr, payload: bytes) -> None:
+    def send_msg(self, destination: int | bytes | Addr, payload: bytes) -> int | None:
         """Send a message to the network.
 
         Args:
-            destination (Addr): The destination address.
+            destination (int | bytes | Addr): The destination address.
             payload (bytes): The payload to send.
+        
+        Returns:
+            int | None: The number of bytes sent or None if the message was
+                not sent.
         """
-        if not isinstance(payload, bytes):
-            payload = bytes(payload)
-        if not isinstance(destination, Addr):
-            destination = Addr(destination)
-        assert isinstance(payload, bytes)
-        self.network.send_msg(
+        
+        # send the message to the network - all checks are done in the network
+        bytes_sent = self.network.send_msg(
             source=self._addr,
             destination=destination,
             payload=payload
         )
 
+        return bytes_sent
 
     @property
     def address(self):
@@ -151,5 +153,6 @@ class XerxesRoot:
         """
         return (
             pingPacket.v_maj == PROTOCOL_VERSION_MAJOR and
-            pingPacket.v_min == PROTOCOL_VERSION_MINOR
+            pingPacket.v_min == PROTOCOL_VERSION_MINOR and 
+            pingPacket.dev_id != DevId.NULL
         )

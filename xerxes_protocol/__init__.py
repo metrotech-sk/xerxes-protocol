@@ -11,10 +11,14 @@ from xerxes_protocol.hierarchy.leaves import (
     DLeaf,
     DLeafData,
     Leaf,
-    LeafData
+    LeafData,
+    LeafConfig,
+    WriteError,
+    WriteErrorReadOnly
 )
 
 from xerxes_protocol.hierarchy.root import XerxesRoot  # noqa: F401
+
 from xerxes_protocol.network import (
     XerxesNetwork,
     Addr,
@@ -23,7 +27,8 @@ from xerxes_protocol.network import (
     ChecksumError,
     MessageIncomplete,
     InvalidMessage,
-    NetworkError
+    NetworkError,
+    checksum
 )
 from xerxes_protocol.ids import (
     MsgIdMixin,
@@ -36,5 +41,19 @@ from xerxes_protocol.defaults import (
     PROTOCOL_VERSION_MAJOR,
     PROTOCOL_VERSION_MINOR
 )
+from xerxes_protocol.memory import (
+    ElementType,
+    uint16_t,
+    uint32_t,
+    int32_t,
+    float_t,
+    uint8_t,
+    double_t,
+    MemoryElement,
+    MemoryNonVolatile,
+    MemoryVolatile,
+    MemoryReadOnly,
+    XerxesMemoryMap
+)
 
-# TODO: Finish convenience file [XD-12](https://rubint.atlassian.net/browse/XD-12)
+from xerxes_protocol.debug_serial import DebugSerial
