@@ -4,7 +4,7 @@ name = "xerxes-protocol"
 version = "1.4.1"
 description = "Python implementation for xerxes-protocol"
 readme = "README.md"
-requires_python = '>=3.8'
+#requires_python = '>=3.8'
 license = {file = "LICENSE"}
 authors = [
     {name = "Stanislav Rubint", email = "stanislav@rubint.sk"}
