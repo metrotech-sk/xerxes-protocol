@@ -1,5 +1,12 @@
 from dataclasses import dataclass
-from typing import final
+
+__author__ = "theMladyPan"
+__version__ = "1.4.2"
+__license__ = "MIT"
+__email__ = "stanislav@rubint.sk"
+__status__ = "Production"
+__package__ = "xerxes_protocol"
+__date__ = "2023-05-15"
 
 # non-volatile memory map (persistent)
 # memory offset of the offset of the process values
@@ -19,6 +26,12 @@ OFFSET_DESIRED_CYCLE_TIME = 32
 
 OFFSET_CONFIG_BITS = 40
 OFFSET_ADDRESS = 44
+
+# configuration values
+CONFIG_VAL0_OFFSET = 48
+CONFIG_VAL1_OFFSET = 52
+CONFIG_VAL2_OFFSET = 56
+CONFIG_VAL3_OFFSET = 60
 
 # Volatile range (not persistent)
 PV0_OFFSET = 256
@@ -50,6 +63,16 @@ DV0_OFFSET = 336
 DV1_OFFSET = 340
 DV2_OFFSET = 344
 DV3_OFFSET = 348
+
+AV0_OFFSET = 352
+AV1_OFFSET = 356
+AV2_OFFSET = 360
+AV3_OFFSET = 364
+
+SV0_OFFSET = 368
+SV1_OFFSET = 372
+SV2_OFFSET = 376
+SV3_OFFSET = 380
 
 MEM_UNLOCKED_OFFSET = 384
 
@@ -168,6 +191,7 @@ class MemoryNonVolatile(XerxesMemoryType):
         desired_cycle_time  (uint32_t): The desired cycle time in microseconds.
         device_address      (uint8_t):  The device address.
         config              (uint8_t):  The configuration bits.
+        config_val<n>       (uint32_t): The <n>th configuration value.
     """
     gain_pv0 = MemoryElement(GAIN_PV0_OFFSET, float_t)
     gain_pv1 = MemoryElement(GAIN_PV1_OFFSET, float_t)
@@ -182,6 +206,11 @@ class MemoryNonVolatile(XerxesMemoryType):
     desired_cycle_time_us = MemoryElement(OFFSET_DESIRED_CYCLE_TIME, uint32_t)
     device_address = MemoryElement(OFFSET_ADDRESS, uint8_t)
     device_config = MemoryElement(OFFSET_CONFIG_BITS, uint8_t)
+
+    config_val0 = MemoryElement(CONFIG_VAL0_OFFSET, uint32_t)
+    config_val1 = MemoryElement(CONFIG_VAL1_OFFSET, uint32_t)
+    config_val2 = MemoryElement(CONFIG_VAL2_OFFSET, uint32_t)
+    config_val3 = MemoryElement(CONFIG_VAL3_OFFSET, uint32_t)
     
 
 class MemoryVolatile(XerxesMemoryType):
@@ -194,6 +223,8 @@ class MemoryVolatile(XerxesMemoryType):
         min_pv<n>       (float_t):  The minimum of the <n>th process value.
         max_pv<n>       (float_t):  The maximum of the <n>th process value.
         dv<n>           (uint32_t): The <n>th discrete value (0s or 1s), e.g. for digital inputs or outputs.
+        av<n>           (float_t):  The <n>th analog value, e.g. for analog inputs or outputs.
+        sv<n>           (int32_t):  The <n>th signed value, e.g. for counters.
         mem_unlocked    (uint32_t): Whether the protected memory is unlocked for writing.
     """
 
@@ -222,10 +253,23 @@ class MemoryVolatile(XerxesMemoryType):
     max_pv2 = MemoryElement(MAX_PV2_OFFSET, float_t)
     max_pv3 = MemoryElement(MAX_PV3_OFFSET, float_t)
 
-    dv0 = MemoryElement(DV0_OFFSET, uint32_t)
-    dv1 = MemoryElement(DV1_OFFSET, uint32_t)
-    dv2 = MemoryElement(DV2_OFFSET, uint32_t)
-    dv3 = MemoryElement(DV3_OFFSET, uint32_t)
+    # digital values, for example for digital inputs or outputs
+    dv0 = MemoryElement(DV0_OFFSET, uint32_t)  # digital value 1
+    dv1 = MemoryElement(DV1_OFFSET, uint32_t)  # digital value 2
+    dv2 = MemoryElement(DV2_OFFSET, uint32_t)  # digital value 3
+    dv3 = MemoryElement(DV3_OFFSET, uint32_t)  # digital value 4
+
+    # additional analog values, for example for analog inputs or outputs
+    av0 = MemoryElement(AV0_OFFSET, float_t)  # analog value 0
+    av1 = MemoryElement(AV1_OFFSET, float_t)  # analog value 1
+    av2 = MemoryElement(AV2_OFFSET, float_t)  # analog value 2
+    av3 = MemoryElement(AV3_OFFSET, float_t)  # analog value 3
+    
+    # signed values, for example for PID controllers, counters, etc.
+    sv0 = MemoryElement(SV0_OFFSET, int32_t)  # signed value 0
+    sv1 = MemoryElement(SV1_OFFSET, int32_t)  # signed value 1
+    sv2 = MemoryElement(SV2_OFFSET, int32_t)  # signed value 2
+    sv3 = MemoryElement(SV3_OFFSET, int32_t)  # signed value 3
 
     memory_lock = MemoryElement(MEM_UNLOCKED_OFFSET, uint32_t)
 
