@@ -31,12 +31,12 @@ _log = logging.getLogger(__name__)
 
 
 __author__ = "theMladyPan"
-__version__ = "1.4.0"
+__version__ = "1.4.2"
 __license__ = "MIT"
 __email__ = "stanislav@rubint.sk"
 __status__ = "Production"
 __package__ = "xerxes_protocol"
-__date__ = "2023-02-22"
+__date__ = "2023-05-15"
 
 __all__ = [
     "LeafConfig",
@@ -112,7 +112,7 @@ class LeafData(object):
         return d
 
 
-class  Leaf:
+class Leaf:
     """Base class for all leaf classes.
 
     This class is the base class for all leaf classes. It is used to represent

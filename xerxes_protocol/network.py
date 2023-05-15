@@ -27,12 +27,12 @@ _all_ = [
 
 
 __author__ = "theMladyPan"
-__version__ = "1.4.0"
+__version__ = "1.4.2"
 __license__ = "MIT"
 __email__ = "stanislav@rubint.sk"
 __status__ = "Production"
 __package__ = "xerxes_protocol"
-__date__ = "2023-02-22"
+__date__ = "2023-05-15"
 
 
 class ChecksumError(Exception): 
@@ -224,7 +224,7 @@ class XerxesNetwork:
 
     """
 
-    _ic = 0
+    _ic = 0  # not used yet
     _instances = {}
     _opened = False
 
@@ -247,11 +247,10 @@ class XerxesNetwork:
         self._s.baudrate = baudrate
         self._s.timeout = timeout
         
-        # reopen the port with new settings
-        self._s.close()
         if not self._s.isOpen():
             self._s.open()
         self._opened = True
+        self._s._reconfigure_port()
 
         return self
      
