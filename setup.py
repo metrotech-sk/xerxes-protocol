@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="xerxes-protocol",
-    version="1.4.1",
+    version="1.4.2a1",
     author="Stanislav Rubint",
     author_email="stanislav@rubint.sk",
     description="Python implementation for xerxes-protocol",
