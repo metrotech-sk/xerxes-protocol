@@ -9,7 +9,9 @@ from typing import Union
 import serial
 from xerxes_protocol.ids import DevId, MsgId
 from xerxes_protocol.defaults import DEFAULT_BAUDRATE, DEFAULT_TIMEOUT
+import logging
 
+log = logging.getLogger(__name__)
 
 _all_ = [
     "ChecksumError",
@@ -322,6 +324,7 @@ class XerxesNetwork:
         chs = 0x01
         # read message length
         msg_len = int(self._s.read(1).hex(), 16)
+        log.debug(f"Message length: {msg_len}")
         chs += msg_len
 
         # read source and destination address
