@@ -81,13 +81,15 @@ STATUS_OFFSET = 512
 ERROR_OFFSET = 520
 UID_OFFSET = 528
 
+MESSAGE_OFFSET = 3 * 256  # 768
+
 OFFSET_NET_CYCLE_TIME = 544
 
 
 @dataclass
 class ElementType:
     """Represents a memory type in memory.
-    
+
     Attributes:
         _container (bytes | int | float | bool): The container type of the memory type.
         _format (str): The format of the memory type. See struct module for more information.
@@ -159,7 +161,7 @@ class double_t(ElementType):
 @dataclass(frozen=True)
 class MemoryElement:
     """Represents a memory element in the Xerxes memory map.
-    
+
     Attributes:
         mem_addr (int): The memory address of the element.
         mem_type (ElementType): The type of the element.
@@ -184,7 +186,7 @@ class XerxesMemoryType:
 
 class MemoryNonVolatile(XerxesMemoryType):
     """Represents the non-volatile memory of the Xerxes memory map.
-    
+
     Attributes:
         gain_pv<n>          (float_t):  The gain of the <n>th process value.
         offset_pv<n>        (float_t):  The offset of the <n>th process value.
@@ -193,6 +195,7 @@ class MemoryNonVolatile(XerxesMemoryType):
         config              (uint8_t):  The configuration bits.
         config_val<n>       (uint32_t): The <n>th configuration value.
     """
+
     gain_pv0 = MemoryElement(GAIN_PV0_OFFSET, float_t)
     gain_pv1 = MemoryElement(GAIN_PV1_OFFSET, float_t)
     gain_pv2 = MemoryElement(GAIN_PV2_OFFSET, float_t)
@@ -211,7 +214,7 @@ class MemoryNonVolatile(XerxesMemoryType):
     config_val1 = MemoryElement(CONFIG_VAL1_OFFSET, uint32_t)
     config_val2 = MemoryElement(CONFIG_VAL2_OFFSET, uint32_t)
     config_val3 = MemoryElement(CONFIG_VAL3_OFFSET, uint32_t)
-    
+
 
 class MemoryVolatile(XerxesMemoryType):
     """Represents the volatile memory of the Xerxes memory map.
@@ -264,7 +267,7 @@ class MemoryVolatile(XerxesMemoryType):
     av1 = MemoryElement(AV1_OFFSET, float_t)  # analog value 1
     av2 = MemoryElement(AV2_OFFSET, float_t)  # analog value 2
     av3 = MemoryElement(AV3_OFFSET, float_t)  # analog value 3
-    
+
     # signed values, for example for PID controllers, counters, etc.
     sv0 = MemoryElement(SV0_OFFSET, int32_t)  # signed value 0
     sv1 = MemoryElement(SV1_OFFSET, int32_t)  # signed value 1
@@ -288,19 +291,21 @@ class MemoryReadOnly(XerxesMemoryType):
     device_error = MemoryElement(ERROR_OFFSET, uint64_t, write_access=False)
     device_uid = MemoryElement(UID_OFFSET, uint64_t, write_access=False)
 
-    net_cycle_time_us = MemoryElement(OFFSET_NET_CYCLE_TIME, uint32_t, write_access=False)
+    net_cycle_time_us = MemoryElement(
+        OFFSET_NET_CYCLE_TIME, uint32_t, write_access=False
+    )
 
 
 class XerxesMemoryMap(MemoryNonVolatile, MemoryVolatile, MemoryReadOnly):
     """Xerxes memory map class.
-    
+
     This class is used to access the memory of the Xerxes device.
-    
+
     The memory map is split into three classes:
     - MemoryNonVolatile: contains the non-volatile memory elements - these
         elements are stored in the EEPROM of the Xerxes device
     - MemoryVolatile: contains the volatile memory elements - these elements
         are stored in the RAM of the Xerxes device
     - MemoryReadOnly: contains the read-only memory elements - these elements
-        are stored in the RAM of the Xerxes device and can only be read        
+        are stored in the RAM of the Xerxes device and can only be read
     """
