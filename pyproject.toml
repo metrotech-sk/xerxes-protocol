@@ -22,11 +22,12 @@ keywords = [
 homepage = "http://metrotech.sk"
 repository = "https://github.com/metrotech-sk/xerxes-protocol"
 
+[project.scripts]
+xerxes_config = "xerxes_protocol.cli_util:address_config"
+
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.dynamic]
-requires-python = {file = "setup.cfg"}
 classifiers = {file = "setup.cfg"}
-scripts = {file = "setup.cfg"}
