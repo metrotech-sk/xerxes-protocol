@@ -14,13 +14,14 @@ from xerxes_protocol.hierarchy.leaves import (
     LeafData,
     LeafConfig,
     WriteError,
-    WriteErrorReadOnly
+    WriteErrorReadOnly,
 )
 
 from xerxes_protocol.hierarchy.root import XerxesRoot  # noqa: F401
 
 from xerxes_protocol.network import (
     XerxesNetwork,
+    XerxesNetworkSingleton,
     Addr,
     XerxesPingReply,
     XerxesMessage,
@@ -28,18 +29,18 @@ from xerxes_protocol.network import (
     MessageIncomplete,
     InvalidMessage,
     NetworkError,
-    checksum
+    checksum,
 )
 from xerxes_protocol.ids import (
     MsgIdMixin,
     MsgId,
     DevId,
     DevIdMixin,
-    MAGIC_UNLOCK
+    MAGIC_UNLOCK,
 )
 from xerxes_protocol.defaults import (
     PROTOCOL_VERSION_MAJOR,
-    PROTOCOL_VERSION_MINOR
+    PROTOCOL_VERSION_MINOR,
 )
 from xerxes_protocol.memory import (
     ElementType,
@@ -53,14 +54,14 @@ from xerxes_protocol.memory import (
     MemoryNonVolatile,
     MemoryVolatile,
     MemoryReadOnly,
-    XerxesMemoryMap
+    XerxesMemoryMap,
 )
 from xerxes_protocol.error_flags import (
     ERROR_MASK_UART_OVERLOAD,
     ERROR_MASK_CPU_OVERLOAD,
     ERROR_MASK_BUS_COLLISION,
     ERROR_MASK_WATCHDOG_TIMEOUT,
-    ERROR_MASK_SENSOR_OVERLOAD
+    ERROR_MASK_SENSOR_OVERLOAD,
 )
 
 from xerxes_protocol.debug_serial import DebugSerial

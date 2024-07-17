@@ -192,3 +192,34 @@ class XerxesRoot:
             and pingPacket.v_min == PROTOCOL_VERSION_MINOR
             and pingPacket.dev_id != DevId.NULL
         )
+
+
+class XerxesRootSingleton:
+    """Singleton class for XerxesRoot.
+
+    This class is a singleton for the XerxesRoot class. It is used to create
+    only one instance of the XerxesRoot class.
+
+    Args:
+        my_addr (Union[Addr, int, bytes]): The address of this node.
+        network (XerxesNetwork): The network to use.
+
+    Attributes:
+        _instance (XerxesRoot): The instance of the XerxesRoot class.
+    """
+
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = XerxesRoot(*args, **kwargs)
+        return cls._instance
+
+    def __getattr__(self, name):
+        return getattr(self._instance, name)
+
+    def __setattr__(self, name, value):
+        return setattr(self._instance, name, value)
+
+    def __delattr__(self, name):
+        return delattr(self._instance, name)
